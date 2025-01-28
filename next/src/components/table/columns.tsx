@@ -18,19 +18,19 @@ const handleViewImage = (row: DicomData) => {
 export const getDefaultColumns = (): GridColDef<DicomData>[] => {
     return [
       {
-        field: 'imageInfo.PatientName',
+        field: 'PatientName',
         headerName: 'Patient Name',
         flex: 1,
         valueGetter: (params: GridRenderCellParams<DicomData>) => {
-          return params.row?.imageInfo?.PatientName || 'N/A';
+          return params.row?.PatientName || 'N/A';
         },
       },
       {
-        field: 'imageInfo.StudyDate',
+        field: 'StudyDate',
         headerName: 'Patient Birth Date',
         flex: 1,
         valueGetter: (params: GridRenderCellParams<DicomData>) => {
-          const date = params.row?.imageInfo?.StudyDate;
+          const date = params.row?.StudyDate;
           if (!date) return 'N/A';
           try {
             const year = date.substring(0, 4);
@@ -43,11 +43,11 @@ export const getDefaultColumns = (): GridColDef<DicomData>[] => {
         },
       },
       {
-        field: 'imageInfo.SeriesDescription',
+        field: 'SeriesDescription',
         headerName: 'Series Description',
         flex: 1,
         valueGetter: (params: GridRenderCellParams<DicomData>) => {
-          return params.row?.imageInfo?.SeriesDescription || 'N/A';
+          return params.row?.SeriesDescription || 'N/A';
         },
       },
       {

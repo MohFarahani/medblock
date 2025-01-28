@@ -29,11 +29,6 @@ export interface DicomData {
   SeriesNumber: number;
   NumberOfFrames: number;
   StudyDescription: string;
-  imageInfo: {
-    PatientName: string;
-    StudyDate: string;
-    SeriesDescription: string;
-  };
 }
 
 export interface TableProps {
