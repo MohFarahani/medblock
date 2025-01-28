@@ -128,3 +128,13 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Python
+next/python_env/venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Temporary files
+tmp/
