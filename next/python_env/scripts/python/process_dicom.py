@@ -1,128 +1,121 @@
+# python_env/scripts/python/process_dicom.py
+
 import sys
 import json
 import numpy as np
 from PIL import Image
-from numpy import maximum, ndarray
-from pydicom import dcmread, FileDataset
+from pydicom import dcmread
 from pydicom.multival import MultiValue
 from pydicom.valuerep import PersonName
 
-def getDicomValue(ds,name):
+def getDicomValue(ds, name):
     value = ds.get(name)
     if value is None:
         return ''
     if isinstance(value, MultiValue):
         array = np.array(value)
-    # Convert NumPy array to list
         return array.tolist()
     if isinstance(value, PersonName):
-        return value.formatted('format_str') # Adjust as needed
+        return str(value)
     if isinstance(value, np.ndarray):
-        return value.tolist() # Convert NumPy arrays to lists
+        return value.tolist()
     if isinstance(value, (np.floating, np.integer)):
-        return value.item() # Convert NumPy scalar to native Python type
+        return value.item()
     return value
 
 def convert_dicom(filepath, output_type="json", with_metadata=False):
-
-    # https://pydicom.github.io/pydicom/stable/tutorials/dataset_basics.html
-    # Extract dataset from dcm file
-    # https://pydicom.github.io/pydicom/stable/reference/dataset.html
-
-    ds = dcmread(filepath)
-    # Extract the pixel data from dataset
-    pixel_data = ds.pixel_array
     try:
-        rescale_intercept = ds.RescaleIntercept
-    except:
-        rescale_intercept = 0
+        # Extract dataset from dcm file
+        ds = dcmread(filepath)
+        
+        # Extract the pixel data from dataset
+        pixel_data = ds.pixel_array
+        
+        # Get rescale intercept or default to 0
+        try:
+            rescale_intercept = ds.RescaleIntercept
+        except:
+            rescale_intercept = 0
 
-    # Convert to float to avoid overflow or underflow losses.
-    pixel_data_float = pixel_data.astype(float)
-    pixel_data_float += rescale_intercept
-    maximum = np.amax(pixel_data_float)
-    minimum = np.amin(pixel_data_float)
-    # Rescaling grey scale between 0-255
-    pixel_data_float_scaled = np.maximum(pixel_data_float, 0) / pixel_data_float.max(initial=0) *
-    255.0
-    # Convert to uint8 ndarray
-    pixel_data_uint8_scaled = np.uintc(pixel_data_float_scaled)
-    SliceLocation = getDicomValue(ds,'SliceLocation')
-    ImageOrientationPatient = getDicomValue(ds,'ImageOrientationPatient')
-    ImagePositionPatient = getDicomValue(ds,'ImagePositionPatient')
-    InstanceNumber = getDicomValue(ds,'InstanceNumber')
-    if output_type == "json":
-        # Convert array to list
-        PixelSpacing = getDicomValue(ds,'PixelSpacing')
-        Modality = getDicomValue(ds,'Modality')
-        SeriesDescription = getDicomValue(ds,'SeriesDescription')
-        ProtocolName = getDicomValue(ds,'ProtocolName')
-        PatientName = getDicomValue(ds,'PatientName')
-        StudyDate = getDicomValue(ds,'StudyDate')
-        StudyTime = getDicomValue(ds,'StudyTime')
-        SliceThickness = getDicomValue(ds,'SliceThickness')
-        SpacingBetweenSlices = getDicomValue(ds,'SpacingBetweenSlices')
-        RepetitionTime = getDicomValue(ds,'RepetitionTime')
-        EchoTime = getDicomValue(ds,'EchoTime')
-        ImageType = getDicomValue(ds,'ImageType')
-        MagneticFieldStrength = getDicomValue(ds,'MagneticFieldStrength')
-        SeriesNumber = getDicomValue(ds,'SeriesNumber')
-        NumberOfFrames = getDicomValue(ds,'NumberOfFrames')
-        StudyDescription = getDicomValue(ds,'StudyDescription')
-        output_json = {
-        "slices":[{
-        "image": pixel_data_uint8_scaled.tolist(),
-        "InstanceNumber": InstanceNumber,
-        "SliceLocation": SliceLocation,
-        "ImageOrientationPatient": ImageOrientationPatient,
-        "ImagePositionPatient": ImagePositionPatient,
-        "filepath": filepath,
-        }],
-        "width": ds.Columns,
-        "height": ds.Rows,
-        "minimum": float(minimum),
-        "maximum": float(maximum),
-        "Modality":Modality,
-        "SeriesDescription":SeriesDescription,
-        "ProtocolName":ProtocolName,
-        "PatientName":str(PatientName),
-        "StudyDate":StudyDate,
-        "StudyTime":StudyTime,
-        "SliceThickness":float(SliceThickness),
-        "SpacingBetweenSlices":float(SpacingBetweenSlices),
-        "PixelSpacing":PixelSpacing,
-        "RepetitionTime":RepetitionTime,
-        "EchoTime":EchoTime,
-        "ImageType":ImageType,
-        "MagneticFieldStrength":MagneticFieldStrength,
-        "SeriesNumber":SeriesNumber,
-        "NumberOfFrames":NumberOfFrames,
-        "StudyDescription":StudyDescription
+        # Convert to float to avoid overflow or underflow losses
+        pixel_data_float = pixel_data.astype(float)
+        pixel_data_float += rescale_intercept
+        
+        # Get maximum and minimum values
+        maximum = float(np.amax(pixel_data_float))
+        minimum = float(np.amin(pixel_data_float))
+
+        # Rescaling grey scale between 0-255
+        # Fix the line that had the syntax error by putting it all on one line
+        pixel_data_float_scaled = (np.maximum(pixel_data_float, 0) / pixel_data_float.max()) * 255.0
+
+        # Convert to uint8 ndarray
+        pixel_data_uint8_scaled = np.uint8(pixel_data_float_scaled)
+
+        if output_type == "json":
+            # Get all the DICOM values
+            output_json = {
+                "slices": [{
+                    "image": pixel_data_uint8_scaled.tolist(),
+                    "InstanceNumber": getDicomValue(ds, 'InstanceNumber'),
+                    "SliceLocation": getDicomValue(ds, 'SliceLocation'),
+                    "ImageOrientationPatient": getDicomValue(ds, 'ImageOrientationPatient'),
+                    "ImagePositionPatient": getDicomValue(ds, 'ImagePositionPatient'),
+                    "filepath": filepath,
+                }],
+                "width": int(ds.Columns),
+                "height": int(ds.Rows),
+                "minimum": minimum,
+                "maximum": maximum,
+                "Modality": getDicomValue(ds, 'Modality'),
+                "SeriesDescription": getDicomValue(ds, 'SeriesDescription'),
+                "ProtocolName": getDicomValue(ds, 'ProtocolName'),
+                "PatientName": getDicomValue(ds, 'PatientName'),
+                "StudyDate": getDicomValue(ds, 'StudyDate'),
+                "StudyTime": getDicomValue(ds, 'StudyTime'),
+                "SliceThickness": float(getDicomValue(ds, 'SliceThickness') or 0),
+                "SpacingBetweenSlices": float(getDicomValue(ds, 'SpacingBetweenSlices') or 0),
+                "PixelSpacing": getDicomValue(ds, 'PixelSpacing'),
+                "RepetitionTime": getDicomValue(ds, 'RepetitionTime'),
+                "EchoTime": getDicomValue(ds, 'EchoTime'),
+                "ImageType": getDicomValue(ds, 'ImageType'),
+                "MagneticFieldStrength": getDicomValue(ds, 'MagneticFieldStrength'),
+                "SeriesNumber": getDicomValue(ds, 'SeriesNumber'),
+                "NumberOfFrames": getDicomValue(ds, 'NumberOfFrames'),
+                "StudyDescription": getDicomValue(ds, 'StudyDescription')
+            }
+            return output_json
+        elif output_type == "image":
+            img = Image.fromarray(pixel_data_uint8_scaled)
+            return img
+        
+    except Exception as e:
+        return {
+            "error": str(e),
+            "details": str(sys.exc_info())
         }
-        return output_json
-    elif output_type == "image":
-        # Convert to PIL image
-        img = Image.fromarray(pixel_data_uint8_scaled)
-        return img
-
-def process_dicom(filepath):
-    ds = convert_dicom(filepath)
-    
-    return ds
 
 if __name__ == "__main__":
+    try:
+        if len(sys.argv) < 4:
+            print(json.dumps({
+                "error": f"Invalid arguments. Expected 3, got {len(sys.argv) - 1}"
+            }))
+            sys.exit(1)
 
-    filepath = sys.argv[1]
-    output_type = sys.argv[2]
-    with_metadata = sys.argv[3]
-    if with_metadata == "True":
-        with_metadata = True
-    else:
-        with_metadata = False
-    if output_type == "json":
-        print(json.dumps(convert_dicom(filepath, output_type, with_metadata)))
-    elif output_type == "image":
-        img = convert_dicom(filepath, output_type, with_metadata)
-        img.show()
-    else:
-        print("Invalid output type. Please use 'json' or 'image'")
+        filepath = sys.argv[1]
+        output_type = sys.argv[2]
+        with_metadata = sys.argv[3].lower() == "true"
+
+        result = convert_dicom(filepath, output_type, with_metadata)
+        
+        # Ensure the result is JSON serializable
+        print(json.dumps(result))
+        sys.stdout.flush()
+
+    except Exception as e:
+        print(json.dumps({
+            "error": str(e),
+            "traceback": str(sys.exc_info())
+        }))
+        sys.exit(1)

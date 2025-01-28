@@ -8,12 +8,18 @@ import {
 import { TableProps } from './types';
 import { getDefaultColumns } from './columns';
 
-export const Table= ({ 
-  data, 
+export const Table = ({ 
+  data = [], // Add default value
   loading = false, 
   columns = getDefaultColumns(),
   title = 'Data Table'
 }: TableProps) => {
+  // Ensure data is an array and all items have an id
+  const safeData = Array.isArray(data) ? data.map(item => ({
+    ...item,
+    id: item.id || crypto.randomUUID()
+  })) : [];
+
   return (
     <Paper 
       elevation={3} 
@@ -28,7 +34,7 @@ export const Table= ({
         {title}
       </Typography>
       <Box sx={{ flexGrow: 1, width: '100%' }}>
-        {data.length === 0 && !loading ? (
+        {safeData.length === 0 && !loading ? (
           <Typography 
             variant="body1" 
             color="text.secondary" 
@@ -39,15 +45,12 @@ export const Table= ({
           </Typography>
         ) : (
           <DataGrid
-            rows={data}
+            rows={safeData}
             columns={columns}
             loading={loading}
             initialState={{
               pagination: {
                 paginationModel: { pageSize: 10 },
-              },
-              sorting: {
-                sortModel: [{ field: 'InstanceNumber', sort: 'asc' }],
               },
             }}
             pageSizeOptions={[5, 10, 25, 50]}
@@ -76,6 +79,7 @@ export const Table= ({
       </Box>
     </Paper>
   );
-}
+};
 
 export default Table;
+
