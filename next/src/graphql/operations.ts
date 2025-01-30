@@ -1,0 +1,36 @@
+import { gql } from '@apollo/client';
+
+export const PROCESS_DICOM_UPLOAD = gql`
+  mutation ProcessDicomUpload($input: DicomUploadInput!) {
+    processDicomUpload(input: $input) {
+      idFile
+      FilePath
+      CreatedDate
+    }
+  }
+`;
+
+export const GET_PATIENT_DATA = gql`
+  query GetPatientData($idPatient: ID!) {
+    patient(idPatient: $idPatient) {
+      idPatient
+      Name
+      CreatedDate
+      studies {
+        idStudy
+        StudyName
+        StudyDate
+        series {
+          idSeries
+          SeriesName
+          modality {
+            Name
+          }
+          files {
+            FilePath
+          }
+        }
+      }
+    }
+  }
+`;

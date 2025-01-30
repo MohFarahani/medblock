@@ -1,4 +1,4 @@
-// Main.tsx
+// src/components/Main.tsx
 'use client';
 
 import { Container, Box, Typography, Stack, Alert, Snackbar } from '@mui/material';
@@ -6,12 +6,35 @@ import { Upload } from '@/components/Upload';
 import { useState, useEffect } from 'react';
 import Table from './table/Table';
 import { DicomData } from './table/types';
+import { useMutation } from '@apollo/client';
+import { gql } from '@apollo/client';
+
+const PROCESS_DICOM_UPLOAD = gql`
+  mutation ProcessDicomUpload($input: DicomUploadInput!) {
+    processDicomUpload(input: $input) {
+      idFile
+      FilePath
+    }
+  }
+`;
+
+interface ProcessDicomResponse {
+  error?: string;
+  PatientName: string;
+  StudyDate: string;
+  StudyDescription?: string;
+  SeriesDescription?: string;
+  Modality: string;
+  filepath: string;
+}
 
 const Main = () => {
   const [dicomData, setDicomData] = useState<DicomData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  
+  const [processDicomUpload] = useMutation(PROCESS_DICOM_UPLOAD);
 
   useEffect(() => {
     setMounted(true);
@@ -33,26 +56,65 @@ const Main = () => {
           });
   
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
           }
   
-          const data = await response.json();
+          const dicomData: ProcessDicomResponse = await response.json();
           
-          if (data.error) {
-            throw new Error(data.error);
+          if (dicomData.error) {
+            throw new Error(dicomData.error);
+          }
+  
+          // Process with GraphQL
+          try {
+            console.log('Sending GraphQL mutation with data:', {
+              patientName: dicomData.PatientName,
+              studyDate: dicomData.StudyDate || new Date().toISOString(),
+              studyDescription: dicomData.StudyDescription || '',
+              seriesDescription: dicomData.SeriesDescription || '',
+              modality: dicomData.Modality,
+              filePath: dicomData.filepath,
+            });
+  
+            const { data, errors } = await processDicomUpload({
+              variables: {
+                input: {
+                  patientName: dicomData.PatientName,
+                  studyDate: dicomData.StudyDate || new Date().toISOString(),
+                  studyDescription: dicomData.StudyDescription || '',
+                  seriesDescription: dicomData.SeriesDescription || '',
+                  modality: dicomData.Modality,
+                  filePath: dicomData.filepath,
+                },
+              },
+            });
+            if (errors) {
+              throw new Error(errors[0].message);
+            }
+  
+            console.log('GraphQL mutation response:', data);
+          } catch (graphqlError) {
+            console.error('GraphQL mutation error:', graphqlError);
+            throw graphqlError;
           }
   
           return {
-            id: mounted ? crypto.randomUUID() : Math.random().toString(),
-            ...data
-          };
+            id: mounted ? Date.now() : Math.floor(Math.random() * 1000000),
+            PatientName: dicomData.PatientName,
+            StudyDate: dicomData.StudyDate,
+            StudyDescription: dicomData.StudyDescription || '',
+            SeriesDescription: dicomData.SeriesDescription || '',
+            Modality: dicomData.Modality,
+            filepath: dicomData.filepath,
+          } as DicomData;
         })
       );
   
       setDicomData(results);
     } catch (error) {
-      console.error('Error processing DICOM files:', error);
-      setError(error instanceof Error ? error.message : 'Failed to process DICOM files');
+      console.error('Error processing files:', error);
+      setError(error instanceof Error ? error.message : 'Failed to process files');
       setDicomData([]);
     } finally {
       setLoading(false);
@@ -60,7 +122,7 @@ const Main = () => {
   };
 
   if (!mounted) {
-    return null; // Return null on server-side
+    return null;
   }
 
   return (

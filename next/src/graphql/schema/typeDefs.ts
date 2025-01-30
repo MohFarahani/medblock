@@ -1,3 +1,4 @@
+// src/graphql/schema.ts
 import { gql } from '@apollo/client';
 
 export const typeDefs = gql`
@@ -5,7 +6,12 @@ export const typeDefs = gql`
     idPatient: ID!
     Name: String!
     CreatedDate: String!
-    studies: [Study!]
+    studies: [Study]
+  }
+
+  type Modality {
+    idModality: ID!
+    Name: String!
   }
 
   type Study {
@@ -13,13 +19,8 @@ export const typeDefs = gql`
     idPatient: ID!
     StudyName: String!
     CreatedDate: String!
-    series: [Series!]
-  }
-
-  type Modality {
-    idModality: ID!
-    Name: String!
-    series: [Series!]
+    patient: Patient
+    series: [Series]
   }
 
   type Series {
@@ -29,7 +30,9 @@ export const typeDefs = gql`
     idModality: ID!
     SeriesName: String!
     CreatedDate: String!
-    files: [File!]
+    study: Study
+    modality: Modality
+    files: [File]
   }
 
   type File {
@@ -39,34 +42,32 @@ export const typeDefs = gql`
     idSeries: ID!
     FilePath: String!
     CreatedDate: String!
+    series: Series
+    study: Study     
+    patient: Patient 
   }
 
-  type DicomUploadResponse {
-    success: Boolean!
-    message: String
-    patientId: ID
-    studyId: ID
-    seriesId: ID
-    fileId: ID
-  }
-
-  input DicomDataInput {
-    PatientName: String!
-    StudyDescription: String!
-    SeriesDescription: String!
-    Modality: String!
-    FilePath: String!
+  input DicomUploadInput {
+    patientName: String!
+    studyDate: String!
+    studyDescription: String
+    seriesDescription: String
+    modality: String!
+    filePath: String!
   }
 
   type Query {
-    patients: [Patient!]!
-    patient(id: ID!): Patient
-    studies(patientId: ID!): [Study!]!
-    series(studyId: ID!): [Series!]!
-    files(seriesId: ID!): [File!]!
+    patients: [Patient]
+    patient(idPatient: ID!): Patient
+    studies: [Study]
+    study(idStudy: ID!): Study
+    allSeries: [Series]
+    series(idSeries: ID!): Series
+    files: [File]
+    file(idFile: ID!): File
   }
 
   type Mutation {
-    uploadDicomData(input: DicomDataInput!): DicomUploadResponse!
+    processDicomUpload(input: DicomUploadInput!): File
   }
 `;

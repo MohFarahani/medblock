@@ -1,18 +1,22 @@
-version: '3.8'
 services:
   db:
     image: mysql:8.0
-    command: --default-authentication-plugin=mysql_native_password
+    platform: linux/amd64  # Add this for M1/M2 Macs
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: medical_db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: dicom_db
+      MYSQL_USER: dicom_user
+      MYSQL_PASSWORD: dicom_password
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --bind-address=0.0.0.0
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
 
 volumes:
-  mysql_data:
+  mysql-data:
