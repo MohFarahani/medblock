@@ -1,6 +1,7 @@
 import { ApolloProvider } from '@/providers/ApolloProvider';
 import ThemeRegistry from './ThemeRegistry';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import Layout from '@/components/Layout';
 
 export const metadata = {
   title: 'Software Engineer- MedBlock',
@@ -17,7 +18,11 @@ export default function RootLayout({
       <body>
         <ErrorBoundary>
           <ApolloProvider>
-            <ThemeRegistry>{children}</ThemeRegistry>
+            <ThemeRegistry>
+              <Layout>
+                 {children}
+                </Layout>             
+              </ThemeRegistry>
           </ApolloProvider>
         </ErrorBoundary>
       </body>
