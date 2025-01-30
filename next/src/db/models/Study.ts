@@ -5,6 +5,7 @@ export class Study extends Model {
   declare idPatient: number;
   declare idStudy: number;
   declare StudyName: string;
+  declare StudyDate: Date;
   declare CreatedDate: Date;
 }
 
@@ -25,6 +26,10 @@ Study.init(
     StudyName: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    StudyDate: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
     },
     CreatedDate: {
       type: DataTypes.DATE,

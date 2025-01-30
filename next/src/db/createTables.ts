@@ -17,6 +17,7 @@ async function createTables() {
         idStudy INT PRIMARY KEY AUTO_INCREMENT,
         idPatient INT NOT NULL,
         StudyName VARCHAR(255) NOT NULL,
+        StudyDate DATETIME NOT NULL,
         CreatedDate DATETIME NOT NULL,
         FOREIGN KEY (idPatient) REFERENCES Patients(idPatient)
       );

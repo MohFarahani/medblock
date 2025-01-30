@@ -1,14 +1,22 @@
-// src/graphql/resolvers.ts
-
 import { models } from '@/db/models';
 import { sequelize } from '@/db/connection';
+import { Transaction } from 'sequelize';
 import type { DicomUploadInput } from './types';
 import type { SqlError } from '@/types/errors';
+// Custom error classes
+export class DicomUploadError extends Error {
+  constructor(message: string, public readonly cause?: unknown) {
+    super(message);
+    this.name = 'DicomUploadError';
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms: number): Promise<void> => 
+  new Promise(resolve => setTimeout(resolve, ms));
 
 const isDeadlockError = (error: unknown): error is SqlError => {
   return (
@@ -17,18 +25,36 @@ const isDeadlockError = (error: unknown): error is SqlError => {
     (error as SqlError).original?.code === 'ER_LOCK_DEADLOCK'
   );
 };
+
 const formatDateString = (dateString: string): Date => {
-  // Convert YYYYMMDD to YYYY-MM-DD format
   const year = dateString.substring(0, 4);
   const month = dateString.substring(4, 6);
   const day = dateString.substring(6, 8);
   const formattedDate = `${year}-${month}-${day}`;
   return new Date(formattedDate);
 };
-const processDicomUploadWithRetry = async (input: DicomUploadInput, retryCount = 0) => {
-  let transaction = null;
+
+const safeRollback = async (transaction: Transaction | null): Promise<void> => {
+  if (!transaction) return;
   try {
-    transaction = await sequelize.transaction();
+    // Use transaction.rollback() directly, wrapped in try-catch
+    await transaction.rollback();
+  } catch (rollbackError) {
+    // If the error is about the transaction already being rolled back, ignore it
+    if (!(rollbackError instanceof Error) || 
+        !rollbackError.message.includes('has been finished')) {
+      console.error('Rollback error:', rollbackError);
+    }
+  }
+};
+
+const processDicomUploadWithRetry = async (input: DicomUploadInput, retryCount = 0) => {
+  let transaction: Transaction | null = null;
+  console.log('INPUT:', input);
+  try {
+    transaction = await sequelize.transaction({
+      isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE
+    });
 
     const [patient] = await models.Patient.findOrCreate({
       where: { Name: input.patientName },
@@ -74,7 +100,7 @@ const processDicomUploadWithRetry = async (input: DicomUploadInput, retryCount =
     return file;
 
   } catch (error) {
-    if (transaction) await transaction.rollback();
+    await safeRollback(transaction);
 
     if (isDeadlockError(error) && retryCount < MAX_RETRIES) {
       console.log(`Deadlock detected, retry attempt ${retryCount + 1} of ${MAX_RETRIES}`);
@@ -82,7 +108,10 @@ const processDicomUploadWithRetry = async (input: DicomUploadInput, retryCount =
       return processDicomUploadWithRetry(input, retryCount + 1);
     }
 
-    throw error;
+    throw new DicomUploadError(
+      'Failed to process DICOM upload',
+      error
+    );
   }
 };
 
@@ -222,7 +251,7 @@ export const resolvers = {
   Mutation: {
     processDicomUpload: async (_: unknown, { input }: { input: DicomUploadInput }, ) => {
       try {
-        console.log('Starting DICOM upload processing with input:', input);
+        console.log('HERE Starting DICOM upload processing with input:', input);
         const result = await processDicomUploadWithRetry(input);
         console.log('DICOM upload processing completed successfully');
         return result;

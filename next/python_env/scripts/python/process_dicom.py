@@ -23,16 +23,39 @@ def getDicomValue(ds, name):
         return ''
 
 def convert_dicom(filepath: str) -> dict:
+    """
+    Convert DICOM file to structured data matching database tables:
+    - PatientTable (Name)
+    - StudiesTable (StudyName, StudyDate)
+    - SeriesTable (SeriesName)
+    - ModalityTable (Name)
+    - FilesTable (FilePath)
+    """
     try:
         ds = dcmread(filepath)
         
+        # Extract relevant DICOM fields
+        patient_name = getDicomValue(ds, 'PatientName')
+        study_date = getDicomValue(ds, 'StudyDate')
+        study_description = getDicomValue(ds, 'StudyDescription')
+        series_description = getDicomValue(ds, 'SeriesDescription')
+        modality = getDicomValue(ds, 'Modality')
+        
+        # Format the output to match the database structure
         output_json = {
-            "PatientName": getDicomValue(ds, 'PatientName'),
-            "StudyDate": getDicomValue(ds, 'StudyDate'),
-            "StudyDescription": getDicomValue(ds, 'StudyDescription'),
-            "SeriesDescription": getDicomValue(ds, 'SeriesDescription'),
-            "Modality": getDicomValue(ds, 'Modality'),
-            "filepath": filepath
+            "PatientName": patient_name,  # For PatientTable
+            "StudyDate": study_date,  # For StudiesTable
+            "StudyDescription": study_description,  # For StudiesTable
+            "SeriesDescription": series_description,  # For SeriesTable
+            "Modality": modality,  # For ModalityTable
+            "filepath": filepath  # For FilesTable
+        }
+        
+        return output_json
+    except Exception as e:
+        return {
+            "error": str(e),
+            "details": str(sys.exc_info())
         }
         
         return output_json

@@ -1,4 +1,3 @@
-// src/graphql/typeDefs/index.ts
 import { gql } from '@apollo/client';
 import { patientTypeDefs } from './patient';
 import { studyTypeDefs } from './study';

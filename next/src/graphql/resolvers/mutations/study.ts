@@ -4,6 +4,7 @@ import type { Transaction } from 'sequelize';
 export interface CreateStudyInput {
   idPatient: number;
   StudyName: string;
+  StudyDate: Date;
   CreatedDate: Date;
 }
 
@@ -14,6 +15,7 @@ export const createStudy = async (
   return await models.Study.create({
     idPatient: input.idPatient,
     StudyName: input.StudyName,
+    StudyDate: input.StudyDate,
     CreatedDate: input.CreatedDate,
   }, { transaction });
 };
