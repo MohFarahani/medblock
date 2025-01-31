@@ -137,4 +137,4 @@ __pycache__/
 *.pyd
 
 # Temporary files
-tmp/
+dicom_files/
