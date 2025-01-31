@@ -6,98 +6,185 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-export async function POST(request: NextRequest) {
-  console.log('API route hit');
+// Types
+interface PythonConfig {
+  venvPath: string;
+  scriptPath: string;
+  pythonPath: string;
+}
 
-  try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
-    }
+interface ProcessOptions {
+  filePath: string;
+  shouldCleanup?: boolean;
+}
 
-    // Create temporary directory if it doesn't exist
-    const tmpDir = path.join(process.cwd(), 'tmp');
-    await fs.mkdir(tmpDir, { recursive: true });
+// Constants
+const PROJECT_ROOT = process.cwd();
+const PYTHON_CONFIG: PythonConfig = {
+  venvPath: path.join(PROJECT_ROOT, 'python_env', 'venv'),
+  scriptPath: path.join(PROJECT_ROOT, 'python_env', 'scripts', 'python', 'process_dicom.py'),
+  pythonPath: path.join(PROJECT_ROOT, 'python_env', 'venv', 'bin', 'python3'),
+};
 
-    // Save the file temporarily
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const filePath = path.join(tmpDir, file.name);
-    await fs.writeFile(filePath, buffer);
+// Utility Functions
+class FileService {
+  static readonly DICOM_FOLDER = path.join(PROJECT_ROOT, 'dicom_files');
 
-    // Get paths
-    const projectRoot = process.cwd();
-    const venvPythonPath = path.join(
-      projectRoot,
-      'python_env',
-      'venv',
-      'bin',
-      'python3'
-    );
-    const scriptPath = path.join(
-      projectRoot,
-      'python_env',
-      'scripts',
-      'python',
-      'process_dicom.py'
-    );
-
-    // Verify Python and numpy installation
+  static async exists(filePath: string): Promise<boolean> {
     try {
-      // Check if virtual environment Python exists
-      await fs.access(venvPythonPath);
-      console.log('Found Python at:', venvPythonPath);
+      await fs.access(filePath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 
-      // Check numpy installation
-      const checkNumpy = `${venvPythonPath} -c "import numpy; print('numpy version:', numpy.__version__)"`;
+  static async ensureDicomFolder(): Promise<void> {
+    try {
+      await fs.access(FileService.DICOM_FOLDER);
+    } catch {
+      await fs.mkdir(FileService.DICOM_FOLDER, { recursive: true });
+    }
+  }
+
+  static async createTempFile(file: File): Promise<string> {
+    // Ensure the dicom_files folder exists
+    await FileService.ensureDicomFolder();
+
+    // Use the original file name
+    const fileName = file.name;
+    const filePath = path.join(FileService.DICOM_FOLDER, fileName);
+
+    try {
+      // Convert File to Buffer and save it
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      await fs.writeFile(filePath, buffer);
+
+      console.log(`File saved successfully at: ${filePath}`); // Debug log
+      return filePath;
+    } catch (error) {
+      console.error('Error saving file:', error);
+      throw new Error('Failed to save file');
+    }
+  }
+
+  static async cleanup(filePath: string): Promise<void> {
+    try {
+      if (await FileService.exists(filePath)) {
+        await fs.unlink(filePath);
+      }
+    } catch (error) {
+      console.error('Cleanup failed:', error);
+    }
+  }
+}
+
+class PythonService {
+  static async verifyEnvironment(): Promise<void> {
+    try {
+      await fs.access(PYTHON_CONFIG.pythonPath);
+      
+      const checkNumpy = `${PYTHON_CONFIG.pythonPath} -c "import numpy; print('numpy version:', numpy.__version__)"`;
       const { stdout: numpyVersion } = await execAsync(checkNumpy);
       console.log('Numpy check:', numpyVersion.trim());
-
-    } catch (error) {
-      console.error('Python/numpy verification failed:', error);
-      throw new Error('Python environment is not properly set up');
+    } catch  {
+      throw new Error('Python environment verification failed');
     }
+  }
 
-    // Execute Python script with absolute path to virtual environment Python
-    const command = `${venvPythonPath} "${scriptPath}" "${filePath}" "json" "False"`;
-    console.log('Executing command:', command);
-
+  static async executeScript(filePath: string) {
+    const command = `${PYTHON_CONFIG.pythonPath} "${PYTHON_CONFIG.scriptPath}" "${filePath}" "json" "False"`;
+    
     const { stdout, stderr } = await execAsync(command, {
       env: {
         ...process.env,
-        PYTHONPATH: path.join(projectRoot, 'python_env', 'venv', 'lib', 'python3.9', 'site-packages'),
+        PYTHONPATH: path.join(PYTHON_CONFIG.venvPath, 'lib', 'python3.9', 'site-packages'),
       }
     });
-
-    // Clean up temporary file
-    await fs.unlink(filePath).catch(console.error);
 
     if (stderr) {
       console.error('Python stderr:', stderr);
     }
 
-    console.log('Python stdout:', stdout);
+    return JSON.parse(stdout);
+  }
+}
 
-    try {
-      const result = JSON.parse(stdout);
-      return NextResponse.json(result);
-    } catch (parseError) {
-      console.error('Failed to parse Python output:', parseError);
-      return NextResponse.json(
-        { error: 'Failed to parse Python output', details: stdout },
-        { status: 500 }
-      );
+class RequestHandler {
+  static async handleFileUpload(request: NextRequest): Promise<ProcessOptions> {
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
+    
+    if (!file) {
+      throw new Error('No file provided');
     }
 
+    console.log('Received file:', file.name); // Debug log
+
+    try {
+      const filePath = await FileService.createTempFile(file);
+      console.log('File saved at:', filePath); // Debug log
+      return { filePath, shouldCleanup: false };
+    } catch (error) {
+      console.error('Error in handleFileUpload:', error);
+      throw error;
+    }
+  }
+
+
+  static async handleFilePath(request: NextRequest): Promise<ProcessOptions> {
+    const body = await request.json();
+    
+    if (!body.filePath) {
+      throw new Error('No file path provided');
+    }
+
+    if (!(await FileService.exists(body.filePath))) {
+      throw new Error('File does not exist');
+    }
+
+    return { filePath: body.filePath, shouldCleanup: false };
+  }
+}
+
+// Main Handler
+export async function POST(request: NextRequest) {
+  try {
+    // Determine request type and get file path
+    const contentType = request.headers.get('content-type') || '';
+    const isMultipart = contentType.includes('multipart/form-data');
+    
+    console.log('Request content type:', contentType); // Debug log
+
+    const processOptions = isMultipart
+      ? await RequestHandler.handleFileUpload(request)
+      : await RequestHandler.handleFilePath(request);
+
+    console.log('Process options:', processOptions); // Debug log
+
+    // Verify Python environment
+    await PythonService.verifyEnvironment();
+
+    // Process file
+    const result = await PythonService.executeScript(processOptions.filePath);
+
+    // Cleanup if necessary
+    if (processOptions.shouldCleanup) {
+      await FileService.cleanup(processOptions.filePath);
+    }
+
+    return NextResponse.json(result);
+
   } catch (error) {
-    console.error('Error processing DICOM file:', error);
+    console.error('Error processing request:', error);
+    
+    const statusCode = error instanceof Error && error.message.includes('exist') ? 404 : 500;
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+
     return NextResponse.json(
-      { 
-        error: 'Failed to process DICOM file', 
-        details: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
+      { error: errorMessage },
+      { status: statusCode }
     );
   }
 }
