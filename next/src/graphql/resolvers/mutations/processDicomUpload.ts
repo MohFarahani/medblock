@@ -1,118 +1,123 @@
 import { sequelize } from '@/db/connection';
-import type { DicomUploadInput } from '@/graphql/types';
 import { Transaction } from 'sequelize';
-import { isDeadlockError } from '@/utils/errors';
-import { formatDateString } from '@/utils/dates';
+import type { DicomUploadInput } from '../../types';
+import type { SqlError } from '@/types/errors';
+
+// Import mutation functions
 import { createOrFindPatient } from './patient';
 import { createStudy } from './study';
 import { createOrFindModality } from './modality';
 import { createSeries } from './series';
 import { createFile } from './file';
-import { SqlError } from '@/types/errors';
 
-interface FileResult {
-  idFile: number;
-  idPatient: number;
-  idStudy: number;
-  idSeries: number;
-  FilePath: string;
-  CreatedDate: Date;
+// Custom error class
+export class DicomUploadError extends Error {
+  constructor(message: string, public readonly cause?: unknown) {
+    super(message);
+    this.name = 'DicomUploadError';
+    Error.captureStackTrace(this, this.constructor);
+  }
 }
 
+// Constants
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
 
+// Utility functions
 const sleep = (ms: number): Promise<void> => 
   new Promise(resolve => setTimeout(resolve, ms));
 
-const safeRollback = async (transaction: Transaction | null): Promise<void> => {
-    if (!transaction) return;
-    try {
-      // Use transaction.rollback() directly, wrapped in try-catch
-      await transaction.rollback();
-    } catch (rollbackError) {
-      // If the error is about the transaction already being rolled back, ignore it
-      if (!(rollbackError instanceof Error) || 
-          !rollbackError.message.includes('has been finished')) {
-        console.error('Rollback error:', rollbackError);
-      }
-    }
-  };
+const isDeadlockError = (error: unknown): error is SqlError => {
+  return (
+    error instanceof Error &&
+    'original' in error &&
+    (error as SqlError).original?.code === 'ER_LOCK_DEADLOCK'
+  );
+};
 
-const processDicomUploadWithRetry = async (
-  input: DicomUploadInput, 
-  retryCount = 0
-): Promise<FileResult> => {
-  let transaction: Transaction | null = null;
+const formatDateString = (dateString: string): Date => {
+  const year = dateString.substring(0, 4);
+  const month = dateString.substring(4, 6);
+  const day = dateString.substring(6, 8);
+  const formattedDate = `${year}-${month}-${day}`;
+  return new Date(formattedDate);
+};
+
+const safeRollback = async (transaction: Transaction | null): Promise<void> => {
+  if (!transaction) return;
   try {
-    // Start a new transaction
+    await transaction.rollback();
+  } catch (rollbackError) {
+    if (!(rollbackError instanceof Error) || 
+        !rollbackError.message.includes('has been finished')) {
+      console.error('Rollback error:', rollbackError);
+    }
+  }
+};
+
+const processDicomUploadWithRetry = async (input: DicomUploadInput, retryCount = 0) => {
+  let transaction: Transaction | null = null;
+  console.log('INPUT:', input);
+  
+  try {
+    // Start transaction
     transaction = await sequelize.transaction({
       isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE
     });
 
-    // Perform all database operations
-    const patient = await createOrFindPatient(
-      {
-        Name: input.patientName,
-        CreatedDate: new Date(),
-      },
-      transaction
-    );
+    // Create or find patient
+    const patient = await createOrFindPatient({
+      Name: input.patientName,
+      CreatedDate: new Date()
+    }, transaction);
 
-    const study = await createStudy(
-      {
-        idPatient: patient.idPatient,
-        StudyName: input.studyDescription || 'Unknown Study',
-        StudyDate: formatDateString(input.studyDate),
-        CreatedDate: formatDateString(input.studyDate),
-      },
-      transaction
-    );
+    // Create study
+    const study = await createStudy({
+      idPatient: patient.idPatient,
+      StudyName: input.studyDescription || 'Unknown Study',
+      StudyDate: formatDateString(input.studyDate),
+      CreatedDate: new Date(),
+    }, transaction);
 
-    const modality = await createOrFindModality(
-      {
-        Name: input.modality,
-      },
-      transaction
-    );
+    // Create or find modality
+    const modality = await createOrFindModality({
+      Name: input.modality
+    }, transaction);
 
-    const series = await createSeries(
-      {
-        idPatient: patient.idPatient,
-        idStudy: study.idStudy,
-        idModality: modality.idModality,
-        SeriesName: input.seriesDescription || 'Unknown Series',
-        CreatedDate: new Date(),
-      },
-      transaction
-    );
+    // Create series
+    const series = await createSeries({
+      idPatient: patient.idPatient,
+      idStudy: study.idStudy,
+      idModality: modality.idModality,
+      SeriesName: input.seriesDescription || 'Unknown Series',
+      CreatedDate: new Date(),
+    }, transaction);
 
-    const file = await createFile(
-      {
-        idPatient: patient.idPatient,
-        idStudy: study.idStudy,
-        idSeries: series.idSeries,
-        FilePath: input.filePath,
-        CreatedDate: new Date(),
-      },
-      transaction
-    );
+    // Create file
+    const file = await createFile({
+      idPatient: patient.idPatient,
+      idStudy: study.idStudy,
+      idSeries: series.idSeries,
+      FilePath: input.filePath,
+      CreatedDate: new Date(),
+    }, transaction);
 
-    // Commit the transaction
+    // Commit transaction
     await transaction.commit();
     return file;
 
   } catch (error) {
-    // Safely handle rollback
+    // Rollback transaction on error
     await safeRollback(transaction);
 
-    if (isDeadlockError(error as SqlError) && retryCount < MAX_RETRIES) {
+    // Retry on deadlock
+    if (isDeadlockError(error) && retryCount < MAX_RETRIES) {
       console.log(`Deadlock detected, retry attempt ${retryCount + 1} of ${MAX_RETRIES}`);
       await sleep(RETRY_DELAY * (retryCount + 1));
       return processDicomUploadWithRetry(input, retryCount + 1);
     }
 
-    // Wrap the error in a custom error class
+    // Throw custom error
     throw new DicomUploadError(
       'Failed to process DICOM upload',
       error
@@ -120,10 +125,8 @@ const processDicomUploadWithRetry = async (
   }
 };
 
-export const processDicomUpload = async (
-  _: unknown, 
-  { input }: { input: DicomUploadInput }
-): Promise<FileResult> => {
+// Main resolver function
+export const processDicomUpload = async (_: unknown, { input }: { input: DicomUploadInput }) => {
   try {
     console.log('Starting DICOM upload processing with input:', input);
     const result = await processDicomUploadWithRetry(input);
@@ -131,50 +134,13 @@ export const processDicomUpload = async (
     return result;
   } catch (error) {
     console.error('Error in processDicomUpload:', error);
-    
-    if (error instanceof DicomUploadError) {
-      throw error;
-    }
-    
-    throw new DicomUploadError(
-      'DICOM upload processing failed',
-      error
+    throw new Error(
+      error instanceof Error 
+        ? `DICOM upload processing failed: ${error.message}`
+        : 'DICOM upload processing failed'
     );
   }
 };
 
-// Custom error classes
-export class DicomUploadError extends Error {
-  constructor(
-    message: string,
-    public readonly cause?: unknown
-  ) {
-    super(message);
-    this.name = 'DicomUploadError';
-    // Maintain proper stack trace
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
-
-export class TransactionError extends Error {
-  constructor(
-    message: string,
-    public readonly cause?: unknown
-  ) {
-    super(message);
-    this.name = 'TransactionError';
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
-
-// Type guards and helper functions
-export const isDicomUploadError = (error: unknown): error is DicomUploadError => {
-  return error instanceof DicomUploadError;
-};
-
-export const handleUploadError = (error: unknown): never => {
-  if (isDicomUploadError(error)) {
-    throw error;
-  }
-  throw new DicomUploadError('Upload failed', error);
-};
+// Export types for use in other files
+export type { DicomUploadInput };

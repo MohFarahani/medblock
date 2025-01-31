@@ -16,3 +16,19 @@ export const formatDateString = (dateString: string): Date => {
   
     return date;
   };
+
+  export const formatDateToMonthDayYear = (dateString: string | undefined) => {
+    if (!dateString) return '';
+    
+    // Create date object from ISO string
+    const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    
+    return date.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };

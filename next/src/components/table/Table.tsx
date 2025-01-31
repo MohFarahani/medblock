@@ -3,10 +3,18 @@
 import { Box, Typography, Paper } from '@mui/material';
 import { 
   DataGrid, 
+  GridColDef, 
   GridToolbar,
 } from '@mui/x-data-grid';
-import { TableProps } from './types';
 import { getDefaultColumns } from './columns';
+import { DicomData } from './types';
+
+export interface TableProps {
+  data: DicomData[];
+  loading?: boolean;
+  columns?: GridColDef[];
+  title?: string;
+}
 
 export const Table = ({ 
   data = [], // Add default value

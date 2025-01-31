@@ -34,3 +34,16 @@ export const GET_PATIENT_DATA = gql`
     }
   }
 `;
+
+export const GET_ALL_DICOM_FILES = gql`
+  query GetAllDicomFiles {
+    getAllDicomFiles {
+      PatientName
+      StudyDate
+      StudyDescription
+      SeriesDescription
+      Modality
+      FilePath
+    }
+  }
+`;

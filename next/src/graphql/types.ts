@@ -50,5 +50,5 @@ export interface DicomData {
   StudyDescription?: string;
   SeriesDescription?: string;
   Modality: string;
-  filePath: string;
+  FilePath: string;
 }

@@ -2,18 +2,44 @@
 
 import Button from '@mui/material/Button';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { DicomData } from './types';
+import { DicomDataTable } from './types';
 import ViewButton from '../ViewButton';
+import { formatDateToMonthDayYear } from '@/utils/dates';
 
 
-const handleDownload = (row: DicomData) => {
-  // Implement download functionality
-  console.log('Downloading:', row);
+const handleDownload = async (row: DicomDataTable) => {
+  try {
+    const response = await fetch(`/api/download?filePath=${encodeURIComponent(row.FilePath)}`);
+    
+    if (!response.ok) {
+      throw new Error('Download failed');
+    }
+
+    // Create blob from response
+    const blob = await response.blob();
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = row.FilePath.split('/').pop() || 'dicom-file';
+    
+    // Trigger download
+    document.body.appendChild(a);
+    a.click();
+    
+    // Cleanup
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Download error:', error);
+    alert('Failed to download file');
+  }
 };
 
 
 
-export const getDefaultColumns = (): GridColDef<DicomData>[] => {
+export const getDefaultColumns = (): GridColDef<DicomDataTable>[] => {
   
 
     return [
@@ -26,6 +52,9 @@ export const getDefaultColumns = (): GridColDef<DicomData>[] => {
         field: 'StudyDate',
         headerName: 'Study Date',
         flex: 1,
+        renderCell: (params: GridRenderCellParams) => {
+          return formatDateToMonthDayYear(params.row?.StudyDate);
+        },
       },
       {
         field: 'SeriesDescription',
@@ -33,32 +62,37 @@ export const getDefaultColumns = (): GridColDef<DicomData>[] => {
         flex: 1,
       },
       {
+        field: 'Modality',
+        headerName: 'Modality',
+        flex: 1,
+      },
+      {
         field: 'download',
         headerName: 'Download',
         flex: 1,
         sortable: false,
-        renderCell: (params: GridRenderCellParams<DicomData>) => (
+        renderCell: (params: GridRenderCellParams<DicomDataTable>) => (
           <Button
             variant="contained"
             size="small"
             color="secondary"
             onClick={() => params.row && handleDownload(params.row)}
-          >
+            >
             Download
           </Button>
         ),
       },
       {
-        field: 'filePath',
+        field: 'FilePath',
         headerName: 'View Image',
         flex: 1,
         sortable: false,
         renderCell: (params) => {
-          console.log('Params:', params); // Debug log
-          console.log('Row data:', params.value); // Debug log
+          console.log('Params row:', params.row); // Debug log
+          console.log('Params value:', params.value); // Debug log
           return (
             <ViewButton
-              filePath={params.row.filePath} // Try using params.value instead
+              filePath={params.row.FilePath} 
               routePath="preview" 
             />
           );

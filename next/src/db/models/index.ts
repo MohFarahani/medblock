@@ -1,9 +1,3 @@
-export * from './Patient';
-export * from './Study';
-export * from './Modality';
-export * from './Series';
-export * from './File';
-
 import { Patient } from './Patient';
 import { Study } from './Study';
 import { Modality } from './Modality';
@@ -14,8 +8,17 @@ import { File } from './File';
 Patient.hasMany(Study, { foreignKey: 'idPatient' });
 Study.belongsTo(Patient, { foreignKey: 'idPatient' });
 
+Patient.hasMany(Series, { foreignKey: 'idPatient' });
+Series.belongsTo(Patient, { foreignKey: 'idPatient' });
+
+Patient.hasMany(File, { foreignKey: 'idPatient' });
+File.belongsTo(Patient, { foreignKey: 'idPatient' });
+
 Study.hasMany(Series, { foreignKey: 'idStudy' });
 Series.belongsTo(Study, { foreignKey: 'idStudy' });
+
+Study.hasMany(File, { foreignKey: 'idStudy' });
+File.belongsTo(Study, { foreignKey: 'idStudy' });
 
 Modality.hasMany(Series, { foreignKey: 'idModality' });
 Series.belongsTo(Modality, { foreignKey: 'idModality' });
