@@ -26,7 +26,7 @@ interface ProcessDicomResponse {
   StudyDescription?: string;
   SeriesDescription?: string;
   Modality: string;
-  filepath: string;
+  filePath: string;
 }
 
 const Main = () => {
@@ -79,7 +79,7 @@ const Main = () => {
               studyDescription: dicomData.StudyDescription || '',
               seriesDescription: dicomData.SeriesDescription || '',
               modality: dicomData.Modality,
-              filePath: dicomData.filepath,
+              filePath: dicomData.filePath,
             },
           },
         });
@@ -100,7 +100,7 @@ const Main = () => {
           StudyDescription: dicomData.StudyDescription || 'N/A',
           SeriesDescription: dicomData.SeriesDescription || 'N/A',
           Modality: dicomData.Modality,
-          filepath: graphQLData.processDicomUpload.FilePath, // Use FilePath from GraphQL response
+          filePath: graphQLData.processDicomUpload.FilePath, // Use FilePath from GraphQL response
         });
       }
   

@@ -48,7 +48,7 @@ def convert_dicom(filepath: str) -> dict:
             "StudyDescription": study_description,  # For StudiesTable
             "SeriesDescription": series_description,  # For SeriesTable
             "Modality": modality,  # For ModalityTable
-            "filepath": filepath  # For FilesTable
+            "filePath": filepath  # For FilesTable
         }
         
         return output_json

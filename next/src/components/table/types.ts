@@ -6,7 +6,7 @@ export interface DicomData {
   StudyDescription?: string;
   SeriesDescription?: string;
   Modality: string;
-  filepath: string;
+  filePath: string;
   // id: number;
   // slices: {
   //   image: number[][];

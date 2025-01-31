@@ -15,7 +15,7 @@ const GET_DICOM_DATA = gql`
       StudyDescription
       SeriesDescription
       Modality
-      filepath
+      filePath
     }
   }
 `;
