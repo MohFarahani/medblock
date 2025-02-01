@@ -4,9 +4,18 @@ import { Box, CircularProgress, Typography } from '@mui/material';
 import { useDicomData } from '@/hooks/useDicomData';
 import { DicomInfo } from './DicomInfo';
 import { ImageViewer } from './ImageViewer';
-import { DicomViewerProps } from './types';
 
-const DicomViewer = ({ filePath }: DicomViewerProps) => {
+interface DicomViewerProps {
+  filePath: string;
+  showControls?: boolean;
+  showInfo?: boolean;
+}
+
+const DicomViewer = ({ 
+  filePath, 
+  showControls = true, 
+  showInfo = true 
+}: DicomViewerProps) => {
   const { data: dicomData, loading, error } = useDicomData(filePath);
 
   if (loading) {
@@ -37,8 +46,8 @@ const DicomViewer = ({ filePath }: DicomViewerProps) => {
 
   return (
     <Box>
-      <DicomInfo dicomData={dicomData} />
-      <ImageViewer dicomData={dicomData} />
+      {showInfo && <DicomInfo dicomData={dicomData} />}
+      <ImageViewer dicomData={dicomData} showControls={showControls} />
     </Box>
   );
 };

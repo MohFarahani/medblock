@@ -7,9 +7,10 @@ import { Magnifier } from './Magnifier';
 
 interface ImageViewerProps {
   dicomData: DicomViewerfData;
+  showControls?: boolean;
 }
 
-export const ImageViewer = ({ dicomData }: ImageViewerProps) => {
+export const ImageViewer = ({ dicomData, showControls = true }: ImageViewerProps) => {
   const [visible, setVisible] = useState(false);
   const [contrast, setContrast] = useState(100);
   const [brightness, setBrightness] = useState(100);
@@ -30,7 +31,7 @@ export const ImageViewer = ({ dicomData }: ImageViewerProps) => {
       <Box
         sx={{
           filter: `contrast(${contrast}%) brightness(${brightness}%)`,
-          mb: 2,
+          mb: showControls ? 2 : 0,
         }}
       >
         <Magnifier
@@ -44,17 +45,19 @@ export const ImageViewer = ({ dicomData }: ImageViewerProps) => {
         />
       </Box>
 
-      <ImageControls
-        contrast={contrast}
-        brightness={brightness}
-        magnifierEnabled={magnifierEnabled}
-        magnification={magnification}
-        onContrastChange={setContrast}
-        onBrightnessChange={setBrightness}
-        onMagnifierToggle={() => setMagnifierEnabled(!magnifierEnabled)}
-        onMagnificationChange={setMagnification}
-        onReset={handleReset}
-      />
+      {showControls && (
+        <ImageControls
+          contrast={contrast}
+          brightness={brightness}
+          magnifierEnabled={magnifierEnabled}
+          magnification={magnification}
+          onContrastChange={setContrast}
+          onBrightnessChange={setBrightness}
+          onMagnifierToggle={() => setMagnifierEnabled(!magnifierEnabled)}
+          onMagnificationChange={setMagnification}
+          onReset={handleReset}
+        />
+      )}
 
       <Viewer
         visible={visible}
