@@ -1,6 +1,6 @@
 'use client';
 
-import DicomViewer from "@/components/DicomViewer";
+import DicomViewer from "@/components/DicomViewer/index";
 import { Container } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
