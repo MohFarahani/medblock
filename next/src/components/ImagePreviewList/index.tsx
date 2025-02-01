@@ -1,9 +1,7 @@
 'use client';
 
-import { Box, Skeleton } from "@mui/material";
+import { ImageList, Box, Skeleton } from "@mui/material";
 import { DicomData } from "@/graphql/types";
-import { useDicomData } from "@/hooks/useDicomData";
-import Image from 'next/image';
 import { PreviewItem } from './PreviewItem';
 
 interface ImagePreviewListProps {
@@ -31,14 +29,22 @@ export const ImagePreviewList = ({
 
   return (
     <Box sx={{ p: 2 }}>
-      {files.map((file) => (
-        <PreviewItem
-          key={file.FilePath}
-          file={file}
-          isSelected={file.FilePath === selectedFilePath}
-          onClick={() => onSelectImage(file.FilePath)}
-        />
-      ))}
+      <ImageList 
+        sx={{ 
+          width: '100%',
+          gap: 16 // Add gap between items
+        }}
+        cols={1} // Show items vertically
+      >
+        {files.map((file) => (
+          <PreviewItem
+            key={file.FilePath}
+            file={file}
+            isSelected={file.FilePath === selectedFilePath}
+            onClick={() => onSelectImage(file.FilePath)}
+          />
+        ))}
+      </ImageList>
     </Box>
   );
 }; 
