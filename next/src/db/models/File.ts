@@ -1,30 +1,16 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../connection';
-import type { Patient } from './Patient';
-import type { Study } from './Study';
-import type { Series } from './Series';
-import type { Modality } from './Modality';
 
-interface FileAttributes {
-  idPatient: number;
-  idStudy: number;
-  idSeries: number;
-  idFile: number;
-  FilePath: string;
-  CreatedDate: Date;
+export class File extends Model {
+  declare idPatient: number;
+  declare idStudy: number;
+  declare idSeries: number;
+  declare idFile: number;
+  declare FilePath: string;
+  declare CreatedDate: Date;
 }
 
-interface FileInstance extends Model<FileAttributes>, FileAttributes {
-  Patient?: Patient & { Name: string };
-  Study?: Study & { StudyDate: Date; StudyName: string };
-  Series?: Series & { 
-    SeriesName: string;
-    Modality?: Modality & { Name: string };
-  };
-}
-
-export const File = sequelize.define<FileInstance>(
-  'File',
+File.init(
   {
     idPatient: {
       type: DataTypes.INTEGER,
@@ -62,9 +48,9 @@ export const File = sequelize.define<FileInstance>(
     },
   },
   {
+    sequelize,
     tableName: 'Files',
     timestamps: false,
   }
 );
 
-export type { FileInstance };
