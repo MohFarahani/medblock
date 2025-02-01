@@ -1,4 +1,4 @@
-import { models } from '@/db/models';
+import { File } from '@/db/models';
 import type { Transaction } from 'sequelize';
 
 export interface CreateFileInput {
@@ -13,7 +13,7 @@ export const createFile = async (
   input: CreateFileInput,
   transaction: Transaction
 ) => {
-  return await models.File.create({
+  return await File.create({
     idPatient: input.idPatient,
     idStudy: input.idStudy,
     idSeries: input.idSeries,
