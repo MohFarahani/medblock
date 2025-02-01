@@ -93,7 +93,7 @@ export const getDefaultColumns = (): GridColDef<DicomDataTable>[] => {
           return (
             <ViewButton
               filePath={params.row.FilePath} 
-              routePath="preview" 
+              routePath="download/preview" 
             />
           );
         },
