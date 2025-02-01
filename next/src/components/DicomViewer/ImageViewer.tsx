@@ -8,9 +8,10 @@ import { Magnifier } from './Magnifier';
 interface ImageViewerProps {
   dicomData: DicomViewerfData;
   showControls?: boolean;
+  showModal?: boolean;
 }
 
-export const ImageViewer = ({ dicomData, showControls = true }: ImageViewerProps) => {
+export const ImageViewer = ({ dicomData, showControls = true, showModal = true }: ImageViewerProps) => {
   const [visible, setVisible] = useState(false);
   const [contrast, setContrast] = useState(100);
   const [brightness, setBrightness] = useState(100);
@@ -25,6 +26,12 @@ export const ImageViewer = ({ dicomData, showControls = true }: ImageViewerProps
   };
 
   const imageUrl = `data:image/png;base64,${dicomData.image.data}`;
+
+  const handleImageClick = () => {
+    if (showModal) {
+      setVisible(true);
+    }
+  };
 
   return (
     <Box>
@@ -41,7 +48,7 @@ export const ImageViewer = ({ dicomData, showControls = true }: ImageViewerProps
           enabled={magnifierEnabled}
           magnification={magnification}
           magnifierSize={180}
-          onClick={() => setVisible(true)}
+          onClick={handleImageClick}
         />
       </Box>
 
@@ -59,25 +66,27 @@ export const ImageViewer = ({ dicomData, showControls = true }: ImageViewerProps
         />
       )}
 
-      <Viewer
-        visible={visible}
-        onClose={() => setVisible(false)}
-        images={[{
-          src: imageUrl,
-          alt: 'DICOM Image'
-        }]}
-        zoomable
-        rotatable
-        scalable
-        downloadable
-        noNavbar
-        zoomSpeed={0.2}
-        defaultSize={{
-          width: dicomData.image.width,
-          height: dicomData.image.height
-        }}
-        noToolbar={false}
-      />
+      {showModal && (
+        <Viewer
+          visible={visible}
+          onClose={() => setVisible(false)}
+          images={[{
+            src: imageUrl,
+            alt: 'DICOM Image'
+          }]}
+          zoomable
+          rotatable
+          scalable
+          downloadable
+          noNavbar
+          zoomSpeed={0.2}
+          defaultSize={{
+            width: dicomData.image.width,
+            height: dicomData.image.height
+          }}
+          noToolbar={false}
+        />
+      )}
     </Box>
   );
 }; 

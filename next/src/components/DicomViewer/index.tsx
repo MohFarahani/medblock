@@ -9,12 +9,14 @@ interface DicomViewerProps {
   filePath: string;
   showControls?: boolean;
   showInfo?: boolean;
+  showModal?: boolean;
 }
 
 const DicomViewer = ({ 
   filePath, 
   showControls = true, 
-  showInfo = true 
+  showInfo = true,
+  showModal = true 
 }: DicomViewerProps) => {
   const { data: dicomData, loading, error } = useDicomData(filePath);
 
@@ -47,7 +49,11 @@ const DicomViewer = ({
   return (
     <Box>
       {showInfo && <DicomInfo dicomData={dicomData} />}
-      <ImageViewer dicomData={dicomData} showControls={showControls} />
+      <ImageViewer 
+        dicomData={dicomData} 
+        showControls={showControls}
+        showModal={showModal}
+      />
     </Box>
   );
 };
