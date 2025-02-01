@@ -1,56 +1,45 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../connection';
+import Series from './Series';
 
-export class File extends Model {
-  declare idPatient: number;
-  declare idStudy: number;
-  declare idSeries: number;
+class File extends Model {
   declare idFile: number;
+  declare idSeries: number;
   declare FilePath: string;
   declare CreatedDate: Date;
 }
 
 File.init(
   {
-    idPatient: {
+    idFile: {
       type: DataTypes.INTEGER,
-      references: {
-        model: 'Patients',
-        key: 'idPatient',
-      },
-    },
-    idStudy: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: 'Studies',
-        key: 'idStudy',
-      },
+      autoIncrement: true,
+      primaryKey: true,
     },
     idSeries: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       references: {
-        model: 'Series',
+        model: Series,
         key: 'idSeries',
       },
     },
-    idFile: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
     FilePath: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(1024),
       allowNull: false,
     },
     CreatedDate: {
       type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+      allowNull: false,
     },
   },
   {
     sequelize,
+    modelName: 'File',
     tableName: 'Files',
     timestamps: false,
   }
 );
+
+export default File;
 

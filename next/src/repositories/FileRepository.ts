@@ -1,4 +1,4 @@
-import { File } from '../db/models/File';
+import File from '../db/models/File';
 import { BaseRepository } from './BaseRepository';
 
 export class FileRepository extends BaseRepository<File> {

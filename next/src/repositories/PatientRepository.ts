@@ -1,4 +1,4 @@
-import { Patient } from '../db/models/Patient';
+import  Patient  from '../db/models/Patient';
 import { BaseRepository } from './BaseRepository';
 
 export class PatientRepository extends BaseRepository<Patient> {

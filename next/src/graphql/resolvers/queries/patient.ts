@@ -1,14 +1,14 @@
-import { models } from '@/db/models';
+import { Patient, Study, Series, File } from '@/db/models';
 
 export const patientQueries = {
   patients: async () => {
     try {
-      return await models.Patient.findAll({
+      return await Patient.findAll({
         include: [{
-          model: models.Study,
+          model: Study,
           include: [{
-            model: models.Series,
-            include: [models.File]
+            model: Series,
+            include: [File]
           }]
         }]
       });
@@ -20,12 +20,12 @@ export const patientQueries = {
 
   patient: async (_: unknown, { idPatient }: { idPatient: string }) => {
     try {
-      const patient = await models.Patient.findByPk(idPatient, {
+      const patient = await Patient.findByPk(idPatient, {
         include: [{
-          model: models.Study,
+          model: Study,
           include: [{
-            model: models.Series,
-            include: [models.File]
+            model: Series,
+            include: [File]
           }]
         }]
       });

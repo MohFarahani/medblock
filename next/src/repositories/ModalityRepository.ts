@@ -1,4 +1,4 @@
-import { Modality } from '../db/models/Modality';
+import Modality  from '../db/models/Modality';
 import { BaseRepository } from './BaseRepository';
 
 export class ModalityRepository extends BaseRepository<Modality> {

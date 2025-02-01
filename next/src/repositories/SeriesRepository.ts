@@ -1,4 +1,4 @@
-import { Series } from '../db/models/Series';
+import  Series  from '../db/models/Series';
 import { BaseRepository } from './BaseRepository';
 
 export class SeriesRepository extends BaseRepository<Series> {
