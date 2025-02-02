@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
 import { AppError, handleApiError } from '@/utils/errorHandling';
+import { FileService } from '@/utils/FileService';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,18 +10,9 @@ export async function GET(request: NextRequest) {
       throw new AppError('No file path provided', 'MISSING_FILE_PATH', 400);
     }
 
-    // Verify file exists
-    try {
-      await fs.access(filePath);
-    } catch {
-      throw new AppError('File not found', 'FILE_NOT_FOUND', 404);
-    }
+    await FileService.verifyFile(filePath);
+    const { fileBuffer, fileName } = await FileService.readFile(filePath);
 
-    // Read file
-    const fileBuffer = await fs.readFile(filePath);
-    const fileName = path.basename(filePath);
-
-    // Return file as download with correct headers
     return new Response(fileBuffer, {
       headers: {
         'Content-Disposition': `attachment; filename="${fileName}"`,

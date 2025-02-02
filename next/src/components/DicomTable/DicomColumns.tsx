@@ -3,11 +3,11 @@
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { DicomDataTable } from '../Table/types';
 import ViewButton from '../ViewButton';
-import { formatDateToMonthDayYear } from '@/utils/dates';
 import { useDownload } from '@/providers/DownloadProvider';
 import { LoadingButton } from '@mui/lab';
-import { downloadFiles } from '@/utils/download';
 import { ROUTES } from '@/constants/routes';
+import { downloadFiles } from '@/utils/download';
+import { formatDateToMonthDayYear } from '@/utils/dates';
 
 // Update the DownloadCell component
 const DownloadCell = ({ params, selectedRows }: { 
