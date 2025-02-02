@@ -8,12 +8,13 @@ import {
   GridToolbarExport,
   GridToolbarColumnsButton,
   GridToolbarFilterButton,
+  GridRowSelectionModel,
 } from '@mui/x-data-grid';
 import { getDefaultColumns } from './columns';
 import { useState } from 'react';
 import { DownloadProvider } from '@/providers/DownloadProvider';
-import { DicomData } from '@/graphql/types';
 import { DicomDataTable } from './types';
+import { DicomData } from '@/graphql/types';
 
 // Custom toolbar component
 function CustomToolbar() {
@@ -27,7 +28,7 @@ function CustomToolbar() {
 }
 
 export interface TableProps {
-  data: DicomDataTable[];
+  data: DicomData[];
   loading?: boolean;
   columns?: GridColDef[];
   title?: string;
@@ -41,14 +42,14 @@ export const Table = ({
   title = 'Data Table',
   onSelectionChange
 }: TableProps) => {
-  const [selectionModel, setSelectionModel] = useState<any[]>([]);
+  const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>([]);
   
   const safeData = Array.isArray(data) ? data.map((item, index) => ({
     ...item,
     id: `${item.FilePath}-${index}`
   })) : [];
 
-  const handleSelectionChange = (newSelectionModel: any) => {
+  const handleSelectionChange = (newSelectionModel: GridRowSelectionModel) => {
     setSelectionModel(newSelectionModel);
     const selectedRows = safeData.filter(row => newSelectionModel.includes(row.id));
     if (onSelectionChange) {
