@@ -5,7 +5,7 @@ import { useDicomData } from '@/hooks/useDicomData';
 import { DicomInfo } from './DicomInfo';
 import { ImageViewer } from './ImageViewer';
 import ErrorDisplay from '../ErrorDisplay';
-import { handleApiError } from '@/utils/errorHandling';
+import { DicomViewerProvider } from '@/providers/DicomViewerProvider';
 
 interface DicomViewerProps {
   filePath: string;
@@ -31,30 +31,28 @@ const DicomViewer = ({
   }
 
   if (error) {
-    const errorResponse = handleApiError(error);
-    const errorMessage = errorResponse instanceof Response ? 
-      JSON.parse(errorResponse.body as unknown as string ).error : 
-      'An unexpected error occurred';
-    return <ErrorDisplay error={errorMessage} onRetry={refetch} />;
+    return <ErrorDisplay error={error} onRetry={refetch} />;
   }
 
   if (!dicomData || !dicomData.image?.data) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px" >
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
         <Typography>No image data available</Typography>
       </Box>
     );
   }
 
   return (
-    <Box height='100%'>
-      {showInfo && <DicomInfo dicomData={dicomData} />}
-      <ImageViewer 
-        dicomData={dicomData} 
-        showControls={showControls}
-        showModal={showModal}
-      />
-    </Box>
+    <DicomViewerProvider>
+      <Box height='100%'>
+        {showInfo && <DicomInfo dicomData={dicomData} />}
+        <ImageViewer 
+          dicomData={dicomData} 
+          showControls={showControls}
+          showModal={showModal}
+        />
+      </Box>
+    </DicomViewerProvider>
   );
 };
 

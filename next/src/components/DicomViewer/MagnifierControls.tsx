@@ -8,7 +8,7 @@ import { MAGNIFIER, MAGNIFIER_CONTROLS } from '@/constants/ui';
 interface MagnifierControlsProps {
   magnifierEnabled: boolean;
   magnification: number;
-  onMagnifierToggle: () => void;
+  onMagnifierToggle: (enabled: boolean) => void;
   onMagnificationChange: (value: number) => void;
 }
 
@@ -46,7 +46,7 @@ export const MagnifierControls = memo(({
       <Box sx={MAGNIFIER_CONTROLS.magnifierGroup}>
         <Tooltip title="Toggle Magnifier">
           <IconButton 
-            onClick={onMagnifierToggle}
+            onClick={() => onMagnifierToggle(true)}
             color={magnifierEnabled ? "primary" : "default"}
             aria-label="Toggle magnifier"
           >

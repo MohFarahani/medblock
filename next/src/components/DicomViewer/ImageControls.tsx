@@ -13,11 +13,11 @@ interface ImageControlsProps {
   brightness: number;
   magnifierEnabled: boolean;
   magnification: number;
-  onContrastChange: (value: number) => void;
-  onBrightnessChange: (value: number) => void;
-  onMagnifierToggle: () => void;
-  onMagnificationChange: (value: number) => void;
-  onReset: () => void;
+  setContrast: (value: number) => void;
+  setBrightness: (value: number) => void;
+  setMagnifierEnabled: (enabled: boolean) => void;
+  setMagnification: (value: number) => void;
+  handleReset: () => void;
 }
 
 export const ImageControls = React.memo(({
@@ -25,11 +25,11 @@ export const ImageControls = React.memo(({
   brightness,
   magnifierEnabled,
   magnification,
-  onContrastChange,
-  onBrightnessChange,
-  onMagnifierToggle,
-  onMagnificationChange,
-  onReset,
+  setContrast,
+  setBrightness,
+  setMagnifierEnabled,
+  setMagnification,
+  handleReset,
 }: ImageControlsProps) => {
   return (
     <Paper 
@@ -74,8 +74,8 @@ export const ImageControls = React.memo(({
               <MagnifierControls
                 magnifierEnabled={magnifierEnabled}
                 magnification={magnification}
-                onMagnifierToggle={onMagnifierToggle}
-                onMagnificationChange={onMagnificationChange}
+                onMagnifierToggle={(enabled) => setMagnifierEnabled(enabled)}
+                onMagnificationChange={(value) => setMagnification(value)}
               />
 
               {/* Contrast Control */}
@@ -85,7 +85,7 @@ export const ImageControls = React.memo(({
                 </Tooltip>
                 <Slider
                   value={contrast}
-                  onChange={(_, value) => onContrastChange(value as number)}
+                  onChange={(_, value) => setContrast(value as number)}
                   min={0}
                   max={200}
                   sx={IMAGE_CONTROLS.SLIDER}
@@ -100,7 +100,7 @@ export const ImageControls = React.memo(({
                 </Tooltip>
                 <Slider
                   value={brightness}
-                  onChange={(_, value) => onBrightnessChange(value as number)}
+                  onChange={(_, value) => setBrightness(value as number)}
                   min={0}
                   max={200}
                   sx={IMAGE_CONTROLS.SLIDER}
@@ -115,7 +115,7 @@ export const ImageControls = React.memo(({
               justifyContent: { xs: 'center', sm: 'flex-start' }
             }}>
               <Tooltip title="Reset All">
-                <IconButton onClick={onReset}>
+                <IconButton onClick={handleReset}>
                   <RestartAltIcon />
                 </IconButton>
               </Tooltip>
