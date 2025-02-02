@@ -95,30 +95,53 @@ export const Table = <T extends object>({
               toolbar: CustomToolbar,
             }}
             sx={{
-              '& .MuiDataGrid-cell': {
+              '& .MuiDataGrid-root': {
+                border: 'none',
+              },
+              '& .MuiDataGrid-toolbarContainer': {
+                borderBottom: '1px solid rgba(224, 224, 224, 1)',
+                padding: '8px 6px',
+              },
+              '& .MuiDataGrid-main': {
+                borderRadius: 1,
+              },
+              '& .MuiDataGrid-virtualScroller': {
+                backgroundColor: '#fff',
+              },
+              '& .MuiDataGrid-footerContainer': {
+                borderTop: '1px solid rgba(224, 224, 224, 1)',
+              },
+              '& .MuiDataGrid-columnHeaders': {
                 display: 'flex',
                 alignItems: 'center',
-                minHeight: '100% !important',
-                maxHeight: 'none !important',
-                whiteSpace: 'normal',
-                lineHeight: '1.2em',
-                padding: '8px',
-              },
-              '& .MuiDataGrid-row': {
-                minHeight: '52px !important',
-                maxHeight: 'none !important',
+                minHeight: '56px',
               },
               '& .MuiDataGrid-columnHeader': {
-                minHeight: '52px !important',
-                maxHeight: 'none !important',
+                display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
+                '& .MuiDataGrid-columnHeaderTitleContainer': {
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }
               },
-              '& .MuiDataGrid-cell:hover': {
-                color: 'primary.main',
+              '& .MuiDataGrid-cell': {
+                display: 'flex !important',
+                alignItems: 'center !important',
+                justifyContent: 'center !important',
+                minHeight: '52px !important',
+                borderBottom: '1px solid rgba(224, 224, 224, 1)',
+                padding: '8px',
+                '& > *': {
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }
               },
-              '& .MuiDataGrid-row:nth-of-type(odd)': {
-                backgroundColor: 'action.hover',
-              },
+              border: '1px solid rgba(224, 224, 224, 1)',
+              borderRadius: 1,
+              width: '100%',
             }}
             getRowHeight={() => 'auto'}
             checkboxSelection={enableSelection}
