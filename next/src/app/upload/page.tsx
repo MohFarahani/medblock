@@ -1,7 +1,7 @@
 'use client';
 
-import Main from '@/components/Main';
+import UploadPage from '@/components/UploadPage';
 
-export default function UploadPage() {
-  return <Main />;
+export default function Upload() {
+  return <UploadPage />;
 }

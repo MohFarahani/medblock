@@ -148,6 +148,7 @@ export const Table = <T extends object>({
                 minHeight: '52px !important',
                 borderBottom: '1px solid rgba(224, 224, 224, 1)',
                 padding: '8px',
+                fontSize: '0.875rem',
                 '& > *': {
                   display: 'flex',
                   alignItems: 'center',

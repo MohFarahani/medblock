@@ -7,7 +7,7 @@ import DicomTable from './DicomTable/DicomTable';
 import { useDicomUpload } from '@/hooks/useDicomUploald';
 import { handleApiError } from '@/utils/errorHandling';
 
-const Main = () => {
+const UploadPage = () => {
   
   const { 
     dicomData, 
@@ -53,4 +53,4 @@ const Main = () => {
   );
 };
 
-export default Main;
+export default UploadPage;

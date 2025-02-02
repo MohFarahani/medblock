@@ -43,6 +43,9 @@ const DownloadCell = ({ params, selectedRows }: {
       disabled={hasOtherRowsSelected || (isLoading && !shouldShowLoading)}
       loading={shouldShowLoading}
       loadingPosition="center"
+      sx={{
+        fontSize: '0.7rem',
+      }}
     >
       {selectedRows.length > 0 ? `Download ${selectedRows.length} Files` : 'Download'}
     </LoadingButton>
