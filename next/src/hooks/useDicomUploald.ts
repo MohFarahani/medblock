@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { PROCESS_DICOM_UPLOAD } from '@/graphql/operations';
+import { CHECK_FILE_PATH_EXISTS, PROCESS_DICOM_UPLOAD } from '@/graphql/operations';
 import { DicomDataTable } from '@/components/Table/types';
 import { ROUTES } from '@/constants/routes';
 import axios from 'axios';
-
-
+import { useApolloClient } from '@apollo/client';
+import { LogService } from '@/utils/logging';
 
 interface ProcessDicomResponse {
   error?: string;
@@ -17,16 +17,24 @@ interface ProcessDicomResponse {
   filePath: string;
 }
 
+interface FileStatus {
+  file: File;
+  exists: boolean;
+}
+
 export const useDicomUpload = () => {
   const [dicomData, setDicomData] = useState<DicomDataTable[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fileStatuses, setFileStatuses] = useState<FileStatus[]>([]);
   
   const [processDicomUpload] = useMutation(PROCESS_DICOM_UPLOAD);
+  const client = useApolloClient();
 
   const handleFileUpload = async (files: File[]) => {
     setLoading(true);
     setError(null);
+    const statuses: FileStatus[] = [];
     
     try {
       const newData: DicomDataTable[] = [];
@@ -35,7 +43,6 @@ export const useDicomUpload = () => {
         const formData = new FormData();
         formData.append('file', file);
   
-        // Process DICOM file
         const { data: dicomData } = await axios.post<ProcessDicomResponse>(
           ROUTES.API.PROCESS_DICOM,
           formData,
@@ -50,7 +57,21 @@ export const useDicomUpload = () => {
           throw new Error(dicomData.error);
         }
   
-        // Process with GraphQL
+        // Check if file exists
+        const { data: existingFile } = await client.query({
+          query: CHECK_FILE_PATH_EXISTS,
+          variables: { filePath: dicomData.filePath }
+        });
+  
+        if (existingFile?.checkFilePathExists) {
+          LogService.warn('File already exists, skipping upload', { filePath: dicomData.filePath });
+          statuses.push({ file, exists: true });
+          continue;
+        }
+  
+        statuses.push({ file, exists: false });
+  
+        // Only process and add non-existing files
         const { data: graphQLData } = await processDicomUpload({
           variables: {
             input: {
@@ -64,21 +85,21 @@ export const useDicomUpload = () => {
           },
         });
   
-        if (!graphQLData?.processDicomUpload) {
-          throw new Error('Failed to store DICOM data in database');
+        if (graphQLData?.processDicomUpload) {
+          newData.push({
+            id: Date.now() + Math.random().toString(),
+            PatientName: dicomData.PatientName,
+            StudyDate: dicomData.StudyDate,
+            StudyDescription: dicomData.StudyDescription || 'N/A',
+            SeriesDescription: dicomData.SeriesDescription || 'N/A',
+            Modality: dicomData.Modality,
+            FilePath: graphQLData.processDicomUpload.FilePath,
+          });
         }
-  
-        newData.push({
-          id: Date.now() + Math.random(),
-          PatientName: dicomData.PatientName,
-          StudyDate: dicomData.StudyDate,
-          StudyDescription: dicomData.StudyDescription || 'N/A',
-          SeriesDescription: dicomData.SeriesDescription || 'N/A',
-          Modality: dicomData.Modality,
-          FilePath: graphQLData.processDicomUpload.FilePath,
-        });
       }
   
+      setFileStatuses(statuses);
+      // Only add new, non-existing files to the table
       setDicomData(prevData => [...prevData, ...newData]);
   
     } catch (error) {
@@ -99,5 +120,6 @@ export const useDicomUpload = () => {
     error,
     handleFileUpload,
     clearError: () => setError(null),
+    fileStatuses,
   };
 };

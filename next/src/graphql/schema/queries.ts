@@ -20,5 +20,6 @@ export const queryTypeDefs = gql`
     files: [File]
     file(idFile: ID!): File
     getAllDicomFiles: [DicomFileData!]!
+    checkFilePathExists(filePath: String!): Boolean!
   }
 `;

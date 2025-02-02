@@ -47,3 +47,9 @@ export const GET_ALL_DICOM_FILES = gql`
     }
   }
 `;
+
+export const CHECK_FILE_PATH_EXISTS = gql`
+  query CheckFilePathExists($filePath: String!) {
+    checkFilePathExists(filePath: $filePath)
+  }
+`;

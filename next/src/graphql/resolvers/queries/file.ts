@@ -1,5 +1,7 @@
 import {  models } from '@/db/models';
 import { FileInstance } from '@/db/models/File';
+import { AppError, ErrorCodes } from '@/utils/errorHandling';
+import { LogService } from '@/utils/logging';
 
 export const fileQueries = {
   files: async () => {
@@ -68,4 +70,31 @@ export const fileQueries = {
     }
   },
 
+  checkFilePathExists: async (_: unknown, { filePath }: { filePath: string }) => {
+    try {
+      if (!filePath) {
+        throw new AppError('File path is required', ErrorCodes.MISSING_FILE, 400);
+      }
+
+      const file = await models.File.findOne({
+        where: { FilePath: filePath }
+      });
+      
+      LogService.debug('Checked file path existence', { filePath, exists: !!file });
+      return !!file;
+
+    } catch (error) {
+      LogService.error('Failed to check file path existence', error, { filePath });
+      
+      if (error instanceof AppError) {
+        throw error;
+      }
+      
+      throw new AppError(
+        'Failed to check file existence',
+        ErrorCodes.FILE_NOT_FOUND,
+        500
+      );
+    }
+  },
 };
