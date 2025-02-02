@@ -6,16 +6,24 @@ import { useRouter } from 'next/navigation';
 
 interface ViewButtonProps {
   filePath: string;
+  selectedFiles: string[];
   routePath: string;
+  disabled?: boolean;
 }
 
-const ViewButton = ({ filePath, routePath }: ViewButtonProps) => {
+const ViewButton = ({ filePath, selectedFiles, routePath, disabled }: ViewButtonProps) => {
   const router = useRouter();
 
   const handleViewImage = () => {
-    // Encode the filePath to handle special characters in URLs
-    const encodedFilePath = encodeURIComponent(filePath);
-    router.push(`/${routePath}?filePath=${encodedFilePath}`);
+    if (selectedFiles.length > 1) {
+      // For multiple files, encode the array as a query parameter
+      const encodedFiles = encodeURIComponent(JSON.stringify(selectedFiles));
+      router.push(`/${routePath}?files=${encodedFiles}`);
+    } else {
+      // For single file, use the original behavior
+      const encodedFilePath = encodeURIComponent(filePath);
+      router.push(`/${routePath}?filePath=${encodedFilePath}`);
+    }
   };
 
   return (
@@ -24,6 +32,7 @@ const ViewButton = ({ filePath, routePath }: ViewButtonProps) => {
       size="small"
       color="secondary"
       onClick={handleViewImage}
+      disabled={disabled}
     >
       View
     </Button>

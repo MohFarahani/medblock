@@ -114,12 +114,19 @@ export const getDefaultColumns = (selectedRows: DicomDataTable[] = []): GridColD
       sortable: false,
       headerAlign: 'center',
       align: 'center',
-      renderCell: (params) => (
-        <ViewButton
-          filePath={params.row.FilePath} 
-          routePath="download/preview" 
-        />
-      ),
+      renderCell: (params: GridRenderCellParams<DicomDataTable>) => {
+        const isRowSelected = selectedRows.some(row => row.id === params.row.id);
+        const hasOtherRowsSelected = selectedRows.length > 0 && !isRowSelected;
+
+        return (
+          <ViewButton
+            filePath={params.row.FilePath}
+            selectedFiles={selectedRows.length > 0 ? selectedRows.map(row => row.FilePath) : [params.row.FilePath]}
+            routePath={selectedRows.length > 1 ? "preview/multi" : "download/preview"}
+            disabled={hasOtherRowsSelected}
+          />
+        );
+      },
     },
   ];
 };
