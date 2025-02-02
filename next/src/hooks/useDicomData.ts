@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { DicomViewerfData } from '@/components/DicomViewer/types';
+import { ROUTES } from '@/constants/routes';
 
 export const useDicomData = (filePath: string) => {
   const [loading, setLoading] = useState(true);
@@ -15,7 +16,7 @@ export const useDicomData = (filePath: string) => {
         setLoading(true);
         setError(null);
 
-        const response = await axios.post('/api/process-dicom', {
+        const response = await axios.post(ROUTES.API.PROCESS_DICOM, {
           filePath: filePath
         }, {
           headers: {

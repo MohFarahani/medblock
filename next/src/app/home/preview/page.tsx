@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { ROUTES } from '@/constants/routes';
 
 const DicomViewerPage = () => {
   const searchParams = useSearchParams();
@@ -39,7 +40,7 @@ const DicomViewerPage = () => {
       <Box sx={{ mb: 4 }}>
         <Button 
           variant="contained" 
-          onClick={() => router.push('/home')}
+          onClick={() => router.push(ROUTES.HOME.ROOT)}
           startIcon={<ArrowBackIcon />}
         >
           Back to Home

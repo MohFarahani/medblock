@@ -1,5 +1,6 @@
 'use client';
 
+import { ROUTES } from '@/constants/routes';
 import { ApolloClient, InMemoryCache, ApolloProvider as BaseApolloProvider } from '@apollo/client';
 import { ReactNode } from 'react';
 
@@ -8,7 +9,7 @@ interface ApolloProviderProps {
 }
 
 const client = new ApolloClient({
-  uri: '/api/graphql',
+  uri: ROUTES.API.GRAPHQL,
   cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: {

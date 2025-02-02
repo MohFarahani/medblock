@@ -11,6 +11,7 @@ import {
   GridRowSelectionModel,
 } from '@mui/x-data-grid';
 import { useState } from 'react';
+import { TABLE, BORDERS } from '@/constants/ui';
 
 // Custom toolbar component
 function CustomToolbar() {
@@ -98,15 +99,17 @@ export const Table = <T extends object>({
             loading={loading}
             initialState={{
               pagination: {
-                paginationModel: { pageSize: 10 },
+                paginationModel: { pageSize: TABLE.DEFAULT_PAGE_SIZE },
               },
             }}
-            pageSizeOptions={[5, 10, 25, 50]}
+            pageSizeOptions={TABLE.PAGE_SIZE_OPTIONS}
             slots={{
               toolbar: CustomToolbar,
             }}
             sx={{
               height: '100%',
+              minHeight: TABLE.MIN_HEIGHT,
+              border: BORDERS.DEFAULT,
               '& .MuiDataGrid-root': {
                 border: 'none',
               },
@@ -151,11 +154,8 @@ export const Table = <T extends object>({
                   justifyContent: 'center',
                 }
               },
-              border: '1px solid rgba(224, 224, 224, 1)',
-              borderRadius: 1,
-              width: '100%',
             }}
-            getRowHeight={() => 'auto'}
+            getRowHeight={() => TABLE.ROW_HEIGHT}
             checkboxSelection={enableSelection}
             disableRowSelectionOnClick={enableSelection}
             rowSelectionModel={selectionModel}

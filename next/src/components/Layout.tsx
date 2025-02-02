@@ -15,6 +15,7 @@ import {
 import { Upload, Preview, Menu, Home } from '@mui/icons-material';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
 
 const DRAWER_WIDTH = 240;
 
@@ -28,9 +29,9 @@ const Layout = ({ children }: LayoutProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const menuItems = [
-    { text: 'Home', icon: <Home />, path: '/home' },
-    { text: 'Upload', icon: <Upload />, path: '/upload' },
-    { text: 'Preview', icon: <Preview />, path: '/preview' },
+    { text: 'Home', icon: <Home />, path: ROUTES.HOME.ROOT },
+    { text: 'Upload', icon: <Upload />, path: ROUTES.UPLOAD },
+    { text: 'Preview', icon: <Preview />, path: ROUTES.PREVIEW.ROOT },
   ];
 
   const handleDrawerToggle = () => {

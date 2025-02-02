@@ -1,7 +1,8 @@
+import { ROUTES } from '@/constants/routes';
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 
 const httpLink = createHttpLink({
-  uri: '/api/graphql',
+  uri: ROUTES.API.GRAPHQL,
 });
 
 export const apolloClient = new ApolloClient({

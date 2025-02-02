@@ -11,6 +11,7 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { UPLOAD } from '@/constants/ui';
 
 interface UploadProps {
   onFileSelect?: (files: File[]) => void;
@@ -19,7 +20,7 @@ interface UploadProps {
 
 export const Upload = ({ 
   onFileSelect, 
-  maxSize = 10, // default 10MB
+  maxSize = UPLOAD.MAX_FILE_SIZE_MB,
 }: UploadProps) => {
   const [files, setFiles] = useState<File[]>([]);
   const [dragActive, setDragActive] = useState(false);
@@ -27,15 +28,13 @@ export const Upload = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const validateFile = (file: File): boolean => {
-    // Check file size
     if (file.size > maxSize * 1024 * 1024) {
       setError(`File size should be less than ${maxSize}MB`);
       return false;
     }
 
-    // Check if file is a DICOM file by extension
     const fileName = file.name.toLowerCase();
-    if (!fileName.endsWith('.dcm')) {
+    if (!UPLOAD.ACCEPTED_FILE_EXTENSIONS.some(ext => fileName.endsWith(ext))) {
       setError('Please upload valid DICOM (.dcm) files');
       return false;
     }

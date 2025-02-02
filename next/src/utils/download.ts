@@ -1,3 +1,5 @@
+import { ROUTES } from "@/constants/routes";
+
 type DownloadOptions = {
   delay?: number;
 };
@@ -12,7 +14,7 @@ export const downloadFiles = async (
     
     // Download each file sequentially to avoid overwhelming the browser
     for (const filePath of pathsToDownload) {
-      const response = await fetch(`/api/download?filePath=${encodeURIComponent(filePath)}`);
+      const response = await fetch(`${ROUTES.API.DOWNLOAD}?filePath=${encodeURIComponent(filePath)}`);
       
       if (!response.ok) {
         throw new Error(`Failed to download ${filePath}`);

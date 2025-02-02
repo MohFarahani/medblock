@@ -7,6 +7,7 @@ import { formatDateToMonthDayYear } from '@/utils/dates';
 import { useDownload } from '@/providers/DownloadProvider';
 import { LoadingButton } from '@mui/lab';
 import { downloadFiles } from '@/utils/download';
+import { ROUTES } from '@/constants/routes';
 
 // Update the DownloadCell component
 const DownloadCell = ({ params, selectedRows }: { 
@@ -107,7 +108,7 @@ export const DicomColumns = (selectedRows: DicomDataTable[] = []): GridColDef<Di
           <ViewButton
             filePath={params.row.FilePath}
             selectedFiles={selectedRows.length > 0 ? selectedRows.map(row => row.FilePath) : [params.row.FilePath]}
-            routePath={selectedRows.length > 1 ? "preview/multi" : "home/preview"}
+            routePath={selectedRows.length > 1 ? ROUTES.PREVIEW.MULTI : ROUTES.HOME.PREVIEW}
             disabled={hasOtherRowsSelected}
           />
         );

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { PROCESS_DICOM_UPLOAD } from '@/graphql/operations';
 import { DicomDataTable } from '@/components/table/types';
+import { ROUTES } from '@/constants/routes';
 
 
 
@@ -34,7 +35,7 @@ export const useDicomUpload = () => {
         formData.append('file', file);
   
         // Process DICOM file
-        const response = await fetch('/api/process-dicom', {
+        const response = await fetch(ROUTES.API.PROCESS_DICOM, {
           method: 'POST',
           body: formData,
         });

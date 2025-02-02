@@ -7,6 +7,8 @@ import DicomPreviewLayout from "@/components/DicomPreviewLayout";
 import { Box, Button, Container } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useRouter } from "next/navigation";
+import { ROUTES } from '@/constants/routes';
+
 const MultiPreviewPage = () => {
   const searchParams = useSearchParams();
   const [selectedFilePath, setSelectedFilePath] = useState<string>('');
@@ -40,7 +42,7 @@ const MultiPreviewPage = () => {
     <Box sx={{ mb: 4 }}>
       <Button 
         variant="contained" 
-        onClick={() => router.push('/home')}
+        onClick={() => router.push(ROUTES.HOME.ROOT)}
         startIcon={<ArrowBackIcon />}
       >
         Back to Home

@@ -2,6 +2,9 @@
 
 import { Box, ImageList, ImageListItem } from "@mui/material";
 import { DicomData } from "@/graphql/types";
+import { SCROLLBAR, SPACING } from '@/constants/ui';
+import Image from 'next/image';
+import { ROUTES } from "@/constants/routes";
 
 interface DicomImageListProps {
   dicomFiles: DicomData[];
@@ -19,20 +22,20 @@ export const DicomImageList = ({
       height: 'calc(100vh - 100px)', 
       overflowY: 'scroll',
       '&::-webkit-scrollbar': {
-        width: '8px',
+        width: SCROLLBAR.WIDTH,
       },
       '&::-webkit-scrollbar-track': {
-        background: '#f1f1f1',
+        background: SCROLLBAR.TRACK_COLOR,
       },
       '&::-webkit-scrollbar-thumb': {
-        background: '#888',
-        borderRadius: '4px',
+        background: SCROLLBAR.THUMB_COLOR,
+        borderRadius: SCROLLBAR.BORDER_RADIUS,
       },
       '&::-webkit-scrollbar-thumb:hover': {
-        background: '#555',
+        background: SCROLLBAR.THUMB_HOVER_COLOR,
       },
     }}>
-      <ImageList cols={2} gap={8}>
+      <ImageList cols={2} gap={SPACING.LIST_GAP}>
         {dicomFiles.map((file) => (
           <ImageListItem 
             key={file.FilePath}
@@ -46,15 +49,17 @@ export const DicomImageList = ({
               },
             }}
           >
-            <img
-              src={`/api/process-dicom?filePath=${encodeURIComponent(file.FilePath)}`}
+            <Image
+              src={`${ROUTES.API.PROCESS_DICOM}?filePath=${encodeURIComponent(file.FilePath)}`}
               alt={`${file.PatientName} - ${file.StudyDescription || ''}`}
-              loading="lazy"
+              width={300}
+              height={300}
               style={{
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
               }}
+              priority={false}
             />
           </ImageListItem>
         ))}
