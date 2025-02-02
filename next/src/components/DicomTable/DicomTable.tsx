@@ -1,10 +1,11 @@
 'use client';
 
 import { DicomData } from '@/graphql/types';
-import Table from '../table/Table';
+import Table from '../Table';
 import { DicomColumns } from './DicomColumns';
 import { DownloadProvider } from '@/providers/DownloadProvider';
 import { useState } from 'react';
+import { DicomDataTable } from '../Table/types';
 
 export const DicomTable = ({ data, loading, title }: { 
   data: DicomData[],

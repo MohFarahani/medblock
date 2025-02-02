@@ -1,7 +1,7 @@
 'use client';
 
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { DicomDataTable } from '../table/types';
+import { DicomDataTable } from '../Table/types';
 import ViewButton from '../ViewButton';
 import { formatDateToMonthDayYear } from '@/utils/dates';
 import { useDownload } from '@/providers/DownloadProvider';

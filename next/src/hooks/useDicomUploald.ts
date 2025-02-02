@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { PROCESS_DICOM_UPLOAD } from '@/graphql/operations';
-import { DicomDataTable } from '@/components/table/types';
+import { DicomDataTable } from '@/components/Table/types';
 import { ROUTES } from '@/constants/routes';
 
 
