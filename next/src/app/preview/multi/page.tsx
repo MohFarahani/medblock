@@ -1,11 +1,9 @@
 'use client';
 
-import { Box, Grid } from "@mui/material";
-import DicomViewer from "@/components/DicomViewer/index";
 import { useState, useEffect } from "react";
-import { ImagePreviewList } from "@/components/ImagePreviewList";
 import { useSearchParams } from 'next/navigation';
 import { DicomData } from "@/graphql/types";
+import DicomPreviewLayout from "@/components/DicomPreviewLayout";
 
 const MultiPreviewPage = () => {
   const searchParams = useSearchParams();
@@ -18,7 +16,6 @@ const MultiPreviewPage = () => {
       try {
         const decodedFiles = JSON.parse(decodeURIComponent(filesParam));
         setFiles(decodedFiles);
-        // Set the first file as initially selected
         if (decodedFiles.length > 0) {
           setSelectedFilePath(decodedFiles[0]);
         }
@@ -28,55 +25,21 @@ const MultiPreviewPage = () => {
     }
   }, [searchParams]);
 
-  // Convert files to DicomData format for ImagePreviewList
+  // Convert files to DicomData format
   const filesList: DicomData[] = files.map((filePath) => ({
     FilePath: filePath,
-    PatientName: '',  // These will be populated by useDicomData in PreviewItem
+    PatientName: '',
     StudyDate: '',
     Modality: '',
   }));
 
   return (
-    <Grid container spacing={2} sx={{ height: 'calc(100vh - 64px)' }}>
-      {/* Left side - Image previews */}
-      <Grid item xs={3}>
-        <Box sx={{ 
-          height: '100%', 
-          overflowY: 'auto',
-          borderRight: '1px solid #e0e0e0'
-        }}>
-          <ImagePreviewList 
-            files={filesList}
-            loading={false}
-            selectedFilePath={selectedFilePath}
-            onSelectImage={setSelectedFilePath}
-          />
-        </Box>
-      </Grid>
-
-      {/* Right side - Selected image viewer */}
-      <Grid item xs={9}>
-        <Box sx={{ height: '100%', p: 2 }}>
-          {selectedFilePath ? (
-            <DicomViewer 
-              filePath={selectedFilePath}
-              showInfo={true}
-              showControls={true}
-              showModal={true}
-            />
-          ) : (
-            <Box 
-              display="flex" 
-              justifyContent="center" 
-              alignItems="center" 
-              height="100%"
-            >
-              Select an image to view details
-            </Box>
-          )}
-        </Box>
-      </Grid>
-    </Grid>
+    <DicomPreviewLayout
+      files={filesList}
+      loading={false}
+      selectedFilePath={selectedFilePath}
+      onSelectImage={setSelectedFilePath}
+    />
   );
 };
 
