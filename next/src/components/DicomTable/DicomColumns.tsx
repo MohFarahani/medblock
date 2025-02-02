@@ -3,11 +3,11 @@
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { DicomDataTable } from '../Table/types';
 import ViewButton from '../ViewButton';
-import { formatDateToMonthDayYear } from '@/utils/dates';
 import { useDownload } from '@/providers/DownloadProvider';
 import { LoadingButton } from '@mui/lab';
-import { downloadFiles } from '@/utils/download';
 import { ROUTES } from '@/constants/routes';
+import { downloadFiles } from '@/utils/download';
+import { DateService } from '@/utils/dates';
 
 // Update the DownloadCell component
 const DownloadCell = ({ params, selectedRows }: { 
@@ -65,7 +65,7 @@ export const DicomColumns = (selectedRows: DicomDataTable[] = []): GridColDef<Di
       headerAlign: 'center',
       align: 'center',
       renderCell: (params: GridRenderCellParams) => {
-        return formatDateToMonthDayYear(params.row?.StudyDate);
+        return DateService.formatDateToMonthDayYear(params.row?.StudyDate);
       },
     },
     {

@@ -1,4 +1,5 @@
-export const formatDateString = (dateString: string): Date => {
+export class DateService {
+  static formatDateString(dateString: string): Date {
     if (!/^\d{8}$/.test(dateString)) {
       throw new Error('Invalid date format. Expected YYYYMMDD');
     }
@@ -15,20 +16,28 @@ export const formatDateString = (dateString: string): Date => {
     }
   
     return date;
-  };
+    
+  }
 
-  export const formatDateToMonthDayYear = (dateString: string | undefined) => {
+  static formatDateToMonthDayYear(dateString: string | undefined): string {
     if (!dateString) return '';
     
-    // Create date object from ISO string
     const date = new Date(dateString);
     
-    // Check if date is valid
     if (isNaN(date.getTime())) return 'Invalid Date';
     
     return date.toLocaleDateString('en-US', {
-      month: 'long',
+      month: 'short',
       day: 'numeric',
       year: 'numeric'
     });
-  };
+  }
+
+  static toISODate(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
+  static isValidDate(date: Date): boolean {
+    return date instanceof Date && !isNaN(date.getTime());
+  }
+}
