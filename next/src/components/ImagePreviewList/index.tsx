@@ -36,9 +36,9 @@ export const ImagePreviewList = ({
         }}
         cols={1} // Show items vertically
       >
-        {files.map((file) => (
+        {files.map((file,index) => (
           <PreviewItem
-            key={file.FilePath}
+            key={file.FilePath+index}
             file={file}
             isSelected={file.FilePath === selectedFilePath}
             onClick={() => onSelectImage(file.FilePath)}
