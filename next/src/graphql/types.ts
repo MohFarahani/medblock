@@ -43,8 +43,8 @@ export interface DicomUploadInput {
   modality: string;
   filePath: string;
 }
-
 export interface DicomData {
+  id?: string | number;
   PatientName: string;
   StudyDate: string;
   StudyDescription?: string;

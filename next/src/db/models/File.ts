@@ -9,7 +9,7 @@ interface FileAttributes {
   idPatient: number;
   idStudy: number;
   idSeries: number;
-  idFile: number;
+  idFile?: number;
   FilePath: string;
   CreatedDate: Date;
 }
