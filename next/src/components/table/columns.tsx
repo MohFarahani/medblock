@@ -1,10 +1,11 @@
 'use client';
 
-import Button from '@mui/material/Button';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { DicomDataTable } from './types';
 import ViewButton from '../ViewButton';
 import { formatDateToMonthDayYear } from '@/utils/dates';
+import { useDownload } from '@/providers/DownloadProvider';
+import { LoadingButton } from '@mui/lab';
 
 // Move handleDownload outside of getDefaultColumns and make it handle multiple files
 const handleDownload = async (rows: DicomDataTable | DicomDataTable[]) => {
@@ -44,6 +45,42 @@ const handleDownload = async (rows: DicomDataTable | DicomDataTable[]) => {
     console.error('Download error:', error);
     alert('Failed to download one or more files');
   }
+};
+
+// Update the DownloadCell component
+const DownloadCell = ({ params, selectedRows }: { 
+  params: GridRenderCellParams<DicomDataTable>, 
+  selectedRows: DicomDataTable[] 
+}) => {
+  const { isLoading, setIsLoading } = useDownload();
+  const isRowSelected = selectedRows.some(row => row.id === params.row.id);
+  const hasOtherRowsSelected = selectedRows.length > 0 && !isRowSelected;
+  const shouldShowLoading = isLoading && (isRowSelected || selectedRows.length === 0);
+
+  const handleClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsLoading(true);
+    try {
+      const rowsToDownload = selectedRows.length > 0 ? selectedRows : params.row;
+      await handleDownload(rowsToDownload);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <LoadingButton
+      variant="contained"
+      size="small"
+      color="secondary"
+      onClick={handleClick}
+      disabled={hasOtherRowsSelected || (isLoading && !shouldShowLoading)}
+      loading={shouldShowLoading}
+      loadingPosition="center"
+    >
+      {selectedRows.length > 0 ? `Download ${selectedRows.length} Files` : 'Download'}
+    </LoadingButton>
+  );
 };
 
 export const getDefaultColumns = (selectedRows: DicomDataTable[] = []): GridColDef<DicomDataTable>[] => {
@@ -86,26 +123,9 @@ export const getDefaultColumns = (selectedRows: DicomDataTable[] = []): GridColD
       sortable: false,
       headerAlign: 'center',
       align: 'center',
-      renderCell: (params: GridRenderCellParams<DicomDataTable>) => {
-        const isRowSelected = selectedRows.some(row => row.id === params.row.id);
-        const hasOtherRowsSelected = selectedRows.length > 0 && !isRowSelected;
-
-        return (
-          <Button
-            variant="contained"
-            size="small"
-            color="secondary"
-            onClick={(e) => {
-              e.stopPropagation();
-              const rowsToDownload = selectedRows.length > 0 ? selectedRows : params.row;
-              handleDownload(rowsToDownload);
-            }}
-            disabled={hasOtherRowsSelected}
-          >
-            {selectedRows.length > 0 ? `Download ${selectedRows.length} Files` : 'Download'}
-          </Button>
-        );
-      },
+      renderCell: (params: GridRenderCellParams<DicomDataTable>) => (
+        <DownloadCell params={params} selectedRows={selectedRows} />
+      ),
     },
     {
       field: 'FilePath',
