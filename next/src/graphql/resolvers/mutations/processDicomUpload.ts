@@ -125,19 +125,51 @@ const processDicomUploadWithRetry = async (input: DicomUploadInput, retryCount =
   }
 };
 
+import { validateInput } from '@/graphql/validation/validator';
+import { dicomUploadSchema } from '@/graphql/validation/schemas';
+import { LogService } from '@/utils/logging';
+import { AppError } from '@/utils/errorHandling';
+
 // Main resolver function
 export const processDicomUpload = async (_: unknown, { input }: { input: DicomUploadInput }) => {
   try {
-    console.log('Starting DICOM upload processing with input:', input);
-    const result = await processDicomUploadWithRetry(input);
-    console.log('DICOM upload processing completed successfully');
+    LogService.debug('Starting DICOM upload validation', { input });
+    
+    // Validate input
+    const validatedInput = validateInput(
+      dicomUploadSchema,
+      input,
+      'processDicomUpload'
+    );
+
+    LogService.info('Starting DICOM upload processing', { 
+      patientName: validatedInput.patientName,
+      studyDate: validatedInput.studyDate,
+      modality: validatedInput.modality 
+    });
+
+    const result = await processDicomUploadWithRetry(validatedInput);
+    
+    LogService.info('DICOM upload processing completed successfully', {
+      fileId: result.idFile,
+      filePath: result.FilePath
+    });
+    
     return result;
+    
   } catch (error) {
-    console.error('Error in processDicomUpload:', error);
-    throw new Error(
+    LogService.error('Error in processDicomUpload', error);
+    
+    if (error instanceof AppError) {
+      throw error;
+    }
+    
+    throw new AppError(
       error instanceof Error 
         ? `DICOM upload processing failed: ${error.message}`
-        : 'DICOM upload processing failed'
+        : 'DICOM upload processing failed',
+      'DICOM_UPLOAD_ERROR',
+      500
     );
   }
 };

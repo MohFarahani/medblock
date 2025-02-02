@@ -2,6 +2,8 @@ import {  models } from '@/db/models';
 import { FileInstance } from '@/db/models/File';
 import { AppError, ErrorCodes } from '@/utils/errorHandling';
 import { LogService } from '@/utils/logging';
+import { validateInput } from '@/graphql/validation/validator';
+import { fileIdSchema, filePathSchema, FileIdSchema, FilePathSchema } from '@/graphql/validation/schemas';
 
 export const fileQueries = {
   files: async () => {
@@ -13,17 +15,23 @@ export const fileQueries = {
     }
   },
 
-  file: async (_: unknown, { idFile }: { idFile: string }) => {
+  file: async (_: unknown, args: FileIdSchema) => {
     try {
+      const { idFile } = validateInput(fileIdSchema, args, 'file query');
+      
       const file = await models.File.findByPk(idFile);
-
+      
       if (!file) {
-        throw new Error(`File with ID ${idFile} not found`);
+        throw new AppError(
+          `File with ID ${idFile} not found`,
+          ErrorCodes.FILE_NOT_FOUND,
+          404
+        );
       }
 
       return file;
     } catch (error) {
-      console.error('Query file error:', error);
+      LogService.error('Query file error', error, { idFile: args.idFile });
       throw error;
     }
   },
@@ -70,21 +78,25 @@ export const fileQueries = {
     }
   },
 
-  checkFilePathExists: async (_: unknown, { filePath }: { filePath: string }) => {
+  checkFilePathExists: async (_: unknown, args: FilePathSchema) => {
     try {
-      if (!filePath) {
-        throw new AppError('File path is required', ErrorCodes.MISSING_FILE, 400);
-      }
+      const { filePath } = validateInput(filePathSchema, args, 'checkFilePathExists');
 
       const file = await models.File.findOne({
         where: { FilePath: filePath }
       });
       
-      LogService.debug('Checked file path existence', { filePath, exists: !!file });
+      LogService.debug('Checked file path existence', { 
+        filePath, 
+        exists: !!file 
+      });
+      
       return !!file;
 
     } catch (error) {
-      LogService.error('Failed to check file path existence', error, { filePath });
+      LogService.error('Failed to check file path existence', error, { 
+        filePath: args.filePath 
+      });
       
       if (error instanceof AppError) {
         throw error;
