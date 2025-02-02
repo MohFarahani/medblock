@@ -6,46 +6,7 @@ import ViewButton from '../ViewButton';
 import { formatDateToMonthDayYear } from '@/utils/dates';
 import { useDownload } from '@/providers/DownloadProvider';
 import { LoadingButton } from '@mui/lab';
-
-// Move handleDownload outside of getDefaultColumns and make it handle multiple files
-const handleDownload = async (rows: DicomDataTable | DicomDataTable[]) => {
-  try {
-    // Convert single row to array if needed
-    const filesToDownload = Array.isArray(rows) ? rows : [rows];
-    
-    // Download each file sequentially to avoid overwhelming the browser
-    for (const row of filesToDownload) {
-      const response = await fetch(`/api/download?filePath=${encodeURIComponent(row.FilePath)}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to download ${row.FilePath}`);
-      }
-
-      // Create blob from response
-      const blob = await response.blob();
-      
-      // Create download link
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = row.FilePath.split('/').pop() || 'dicom-file';
-      
-      // Trigger download
-      document.body.appendChild(a);
-      a.click();
-      
-      // Cleanup
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      
-      // Add a small delay between downloads
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-  } catch (error) {
-    console.error('Download error:', error);
-    alert('Failed to download one or more files');
-  }
-};
+import { downloadFiles } from '@/utils/download';
 
 // Update the DownloadCell component
 const DownloadCell = ({ params, selectedRows }: { 
@@ -61,8 +22,12 @@ const DownloadCell = ({ params, selectedRows }: {
     e.stopPropagation();
     setIsLoading(true);
     try {
-      const rowsToDownload = selectedRows.length > 0 ? selectedRows : params.row;
-      await handleDownload(rowsToDownload);
+      const filePaths = selectedRows.length > 0 
+        ? selectedRows.map(row => row.FilePath)
+        : params.row.FilePath;
+      await downloadFiles(filePaths);
+    } catch  {
+      alert('Failed to download one or more files');
     } finally {
       setIsLoading(false);
     }
