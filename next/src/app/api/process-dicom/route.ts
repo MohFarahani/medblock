@@ -1,32 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { handleApiError } from '@/utils/errorHandling';
-import { LogService } from '@/utils/logging';
 import { FileService } from '@/utils/FileService';
 import { PythonService } from '@/utils/PythonService';
 import { RequestHandlerService } from '@/utils/RequestHandlerService';
+import { wrapApiHandler } from '@/utils/apiWrapper';
 
-export async function POST(request: NextRequest) {
-  try {
-    const contentType = request.headers.get('content-type') || '';
-    const isMultipart = contentType.includes('multipart/form-data');
-    
-    LogService.debug('Processing request', { contentType, isMultipart });
+export const POST = wrapApiHandler(async (request: NextRequest) => {
+  const contentType = request.headers.get('content-type') || '';
+  const isMultipart = contentType.includes('multipart/form-data');
+  
+  const processOptions = isMultipart
+    ? await RequestHandlerService.handleFileUpload(request)
+    : await RequestHandlerService.handleFilePath(request);
 
-    const processOptions = isMultipart
-      ? await RequestHandlerService.handleFileUpload(request)
-      : await RequestHandlerService.handleFilePath(request);
+  await PythonService.verifyEnvironment();
+  const result = await PythonService.executeScript(processOptions.filePath);
 
-    await PythonService.verifyEnvironment();
-    const result = await PythonService.executeScript(processOptions.filePath);
-
-    if (processOptions.shouldCleanup) {
-      await FileService.cleanup(processOptions.filePath);
-    }
-
-    return NextResponse.json(result);
-
-  } catch (error) {
-    LogService.error('Process DICOM route error', error);
-    return handleApiError(error);
+  if (processOptions.shouldCleanup) {
+    await FileService.cleanup(processOptions.filePath);
   }
-}
+
+  return NextResponse.json(result);
+});

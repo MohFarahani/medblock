@@ -7,7 +7,7 @@ import { useDownload } from '@/providers/DownloadProvider';
 import { LoadingButton } from '@mui/lab';
 import { ROUTES } from '@/constants/routes';
 import { downloadFiles } from '@/utils/download';
-import { formatDateToMonthDayYear } from '@/utils/dates';
+import { DateService } from '@/utils/dates';
 
 // Update the DownloadCell component
 const DownloadCell = ({ params, selectedRows }: { 
@@ -65,7 +65,7 @@ export const DicomColumns = (selectedRows: DicomDataTable[] = []): GridColDef<Di
       headerAlign: 'center',
       align: 'center',
       renderCell: (params: GridRenderCellParams) => {
-        return formatDateToMonthDayYear(params.row?.StudyDate);
+        return DateService.formatDateToMonthDayYear(params.row?.StudyDate);
       },
     },
     {
