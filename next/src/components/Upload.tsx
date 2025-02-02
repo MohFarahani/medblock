@@ -61,10 +61,9 @@ export const Upload = ({
       }
 
       if (validFiles.length > 0) {
-        const updatedFiles = [...files, ...validFiles];
-        setFiles(updatedFiles);
+        setFiles(validFiles);
         if (onFileSelect) {
-          onFileSelect(updatedFiles);
+          onFileSelect(validFiles);
         }
       }
     } catch (err) {
