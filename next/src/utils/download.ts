@@ -1,4 +1,5 @@
 import { ROUTES } from "@/constants/routes";
+import axios from "axios";
 
 type DownloadOptions = {
   delay?: number;
@@ -14,14 +15,16 @@ export const downloadFiles = async (
     
     // Download each file sequentially to avoid overwhelming the browser
     for (const filePath of pathsToDownload) {
-      const response = await fetch(`${ROUTES.API.DOWNLOAD}?filePath=${encodeURIComponent(filePath)}`);
+      const response = await axios.get(`${ROUTES.API.DOWNLOAD}?filePath=${encodeURIComponent(filePath)}`, {
+        responseType: 'blob'
+      });
       
-      if (!response.ok) {
+      if (!response.data) {
         throw new Error(`Failed to download ${filePath}`);
       }
 
       // Create blob from response
-      const blob = await response.blob();
+      const blob = response.data;
       
       // Create download link
       const url = window.URL.createObjectURL(blob);

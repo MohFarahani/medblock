@@ -3,6 +3,7 @@ import { useMutation } from '@apollo/client';
 import { PROCESS_DICOM_UPLOAD } from '@/graphql/operations';
 import { DicomDataTable } from '@/components/Table/types';
 import { ROUTES } from '@/constants/routes';
+import axios from 'axios';
 
 
 
@@ -35,17 +36,16 @@ export const useDicomUpload = () => {
         formData.append('file', file);
   
         // Process DICOM file
-        const response = await fetch(ROUTES.API.PROCESS_DICOM, {
-          method: 'POST',
-          body: formData,
-        });
+        const { data: dicomData } = await axios.post<ProcessDicomResponse>(
+          ROUTES.API.PROCESS_DICOM,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
   
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-  
-        const dicomData: ProcessDicomResponse = await response.json();
-        
         if (dicomData.error) {
           throw new Error(dicomData.error);
         }
@@ -83,7 +83,11 @@ export const useDicomUpload = () => {
   
     } catch (error) {
       console.error('Error processing files:', error);
-      setError(error instanceof Error ? error.message : 'Failed to process files');
+      setError(
+        axios.isAxiosError(error)
+          ? error.response?.data?.message || error.message
+          : 'Failed to process files'
+      );
     } finally {
       setLoading(false);
     }
