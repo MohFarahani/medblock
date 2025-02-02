@@ -1,7 +1,7 @@
 'use client';
 
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { DicomDataTable } from './types';
+import { DicomDataTable } from '../table/types';
 import ViewButton from '../ViewButton';
 import { formatDateToMonthDayYear } from '@/utils/dates';
 import { useDownload } from '@/providers/DownloadProvider';
@@ -83,7 +83,7 @@ const DownloadCell = ({ params, selectedRows }: {
   );
 };
 
-export const getDefaultColumns = (selectedRows: DicomDataTable[] = []): GridColDef<DicomDataTable>[] => {
+export const DicomColumns = (selectedRows: DicomDataTable[] = []): GridColDef<DicomDataTable>[] => {
   return [
     {
       field: 'PatientName',

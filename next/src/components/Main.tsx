@@ -3,7 +3,7 @@
 
 import { Container, Box, Typography, Stack, Alert, Snackbar } from '@mui/material';
 import { Upload } from '@/components/Upload';
-import Table from './table/Table';
+import DicomTable from './DicomTable/DicomTable';
 import { useDicomUpload } from '@/hooks/useDicomUploald';
 
 
@@ -32,7 +32,7 @@ const Main = () => {
         <Upload onFileSelect={handleFileUpload} />
         
         <Box sx={{ height: 600 }}>
-          <Table 
+          <DicomTable 
             data={dicomData} 
             loading={loading}
             title="DICOM Data"

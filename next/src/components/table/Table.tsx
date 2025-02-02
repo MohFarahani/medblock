@@ -10,11 +10,7 @@ import {
   GridToolbarFilterButton,
   GridRowSelectionModel,
 } from '@mui/x-data-grid';
-import { getDefaultColumns } from './columns';
 import { useState } from 'react';
-import { DownloadProvider } from '@/providers/DownloadProvider';
-import { DicomDataTable } from './types';
-import { DicomData } from '@/graphql/types';
 
 // Custom toolbar component
 function CustomToolbar() {
@@ -27,26 +23,30 @@ function CustomToolbar() {
   );
 }
 
-export interface TableProps {
-  data: DicomData[];
+export interface GenericTableProps<T> {
+  data: T[];
+  columns: GridColDef[];
   loading?: boolean;
-  columns?: GridColDef[];
   title?: string;
-  onSelectionChange?: (selectedRows: DicomDataTable[]) => void;
+  onSelectionChange?: (selectedRows: T[]) => void;
+  idField?: keyof T | ((item: T) => string);
+  enableSelection?: boolean;
 }
 
-export const Table = ({ 
+export const Table = <T extends object>({ 
   data = [],
-  loading = false, 
   columns,
+  loading = false, 
   title = 'Data Table',
-  onSelectionChange
-}: TableProps) => {
+  onSelectionChange,
+  idField = 'id' as keyof T,
+  enableSelection = false,
+}: GenericTableProps<T>) => {
   const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>([]);
   
   const safeData = Array.isArray(data) ? data.map((item, index) => ({
     ...item,
-    id: `${item.FilePath}-${index}`
+    id: typeof idField === 'function' ? idField(item) : item[idField] || `row-${index}`
   })) : [];
 
   const handleSelectionChange = (newSelectionModel: GridRowSelectionModel) => {
@@ -57,83 +57,78 @@ export const Table = ({
     }
   };
 
-  const selectedRows = safeData.filter(row => selectionModel.includes(row.id));
-  const effectiveColumns = columns || getDefaultColumns(selectedRows);
-
   return (
-    <DownloadProvider>
-      <Paper 
-        elevation={3} 
-        sx={{ 
-          p: 2,
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
-        <Typography variant="h6" gutterBottom>
-          {title}
-        </Typography>
-        <Box sx={{ flexGrow: 1, width: '100%' }}>
-          {safeData.length === 0 && !loading ? (
-            <Typography 
-              variant="body1" 
-              color="text.secondary" 
-              align="center" 
-              sx={{ py: 2 }}
-            >
-              No data available.
-            </Typography>
-          ) : (
-            <DataGrid
-              rows={safeData}
-              columns={effectiveColumns}
-              loading={loading}
-              initialState={{
-                pagination: {
-                  paginationModel: { pageSize: 10 },
-                },
-              }}
-              pageSizeOptions={[5, 10, 25, 50]}
-              slots={{
-                toolbar: CustomToolbar,
-              }}
-              sx={{
-                '& .MuiDataGrid-cell': {
-                  display: 'flex',
-                  alignItems: 'center',
-                  minHeight: '100% !important',
-                  maxHeight: 'none !important',
-                  whiteSpace: 'normal',
-                  lineHeight: '1.2em',
-                  padding: '8px',
-                },
-                '& .MuiDataGrid-row': {
-                  minHeight: '52px !important',
-                  maxHeight: 'none !important',
-                },
-                '& .MuiDataGrid-columnHeader': {
-                  minHeight: '52px !important',
-                  maxHeight: 'none !important',
-                  alignItems: 'center',
-                },
-                '& .MuiDataGrid-cell:hover': {
-                  color: 'primary.main',
-                },
-                '& .MuiDataGrid-row:nth-of-type(odd)': {
-                  backgroundColor: 'action.hover',
-                },
-              }}
-              getRowHeight={() => 'auto'}
-              checkboxSelection
-              disableRowSelectionOnClick={true}
-              rowSelectionModel={selectionModel}
-              onRowSelectionModelChange={handleSelectionChange}
-            />
-          )}
-        </Box>
-      </Paper>
-    </DownloadProvider>
+    <Paper 
+      elevation={3} 
+      sx={{ 
+        p: 2,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
+      <Typography variant="h6" gutterBottom>
+        {title}
+      </Typography>
+      <Box sx={{ flexGrow: 1, width: '100%' }}>
+        {safeData.length === 0 && !loading ? (
+          <Typography 
+            variant="body1" 
+            color="text.secondary" 
+            align="center" 
+            sx={{ py: 2 }}
+          >
+            No data available.
+          </Typography>
+        ) : (
+          <DataGrid
+            rows={safeData}
+            columns={columns}
+            loading={loading}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 10 },
+              },
+            }}
+            pageSizeOptions={[5, 10, 25, 50]}
+            slots={{
+              toolbar: CustomToolbar,
+            }}
+            sx={{
+              '& .MuiDataGrid-cell': {
+                display: 'flex',
+                alignItems: 'center',
+                minHeight: '100% !important',
+                maxHeight: 'none !important',
+                whiteSpace: 'normal',
+                lineHeight: '1.2em',
+                padding: '8px',
+              },
+              '& .MuiDataGrid-row': {
+                minHeight: '52px !important',
+                maxHeight: 'none !important',
+              },
+              '& .MuiDataGrid-columnHeader': {
+                minHeight: '52px !important',
+                maxHeight: 'none !important',
+                alignItems: 'center',
+              },
+              '& .MuiDataGrid-cell:hover': {
+                color: 'primary.main',
+              },
+              '& .MuiDataGrid-row:nth-of-type(odd)': {
+                backgroundColor: 'action.hover',
+              },
+            }}
+            getRowHeight={() => 'auto'}
+            checkboxSelection={enableSelection}
+            disableRowSelectionOnClick={enableSelection}
+            rowSelectionModel={selectionModel}
+            onRowSelectionModelChange={handleSelectionChange}
+          />
+        )}
+      </Box>
+    </Paper>
   );
 };
 
