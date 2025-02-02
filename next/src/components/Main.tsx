@@ -14,7 +14,8 @@ const Main = () => {
     loading, 
     error, 
     handleFileUpload, 
-    clearError 
+    clearError,
+    fileStatuses
   } = useDicomUpload();
 
   const errorResponse = error ? handleApiError(error) : null;
@@ -26,7 +27,7 @@ const Main = () => {
           DICOM File Upload
         </Typography>
         
-        <Upload onFileSelect={handleFileUpload} />
+        <Upload onFileSelect={handleFileUpload} fileStatuses={fileStatuses} />
         
         <Box sx={{ height: 600 }}>
           <DicomTable 

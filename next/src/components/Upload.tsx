@@ -17,11 +17,13 @@ import { AppError } from '@/utils/errorHandling';
 interface UploadProps {
   onFileSelect?: (files: File[]) => void;
   maxSize?: number; // in MB
+  fileStatuses?: { file: File; exists: boolean }[];
 }
 
 export const Upload = ({ 
   onFileSelect, 
   maxSize = UPLOAD.MAX_FILE_SIZE_MB,
+  fileStatuses = [],
 }: UploadProps) => {
   const [files, setFiles] = useState<File[]>([]);
   const [dragActive, setDragActive] = useState(false);
@@ -189,43 +191,55 @@ export const Upload = ({
           ) : (
             <Box sx={{ width: '100%' }}>
               <Stack spacing={1} sx={{ mb: 2 }}>
-                {files.map((file, index) => (
-                  <Stack
-                    key={`${file.name}-${index}`}
-                    direction="row"
-                    alignItems="center"
-                    spacing={2}
-                    sx={{ 
-                      p: 2, 
-                      bgcolor: 'background.default',
-                      borderRadius: 1,
-                    }}
-                  >
-                    <InsertDriveFileIcon color="primary" />
-                    <Typography 
-                      variant="body1" 
+                {files.map((file, index) => {
+                  const status = fileStatuses.find(s => s.file === file);
+                  
+                  return (
+                    <Stack
+                      key={`${file.name}-${index}`}
+                      direction="row"
+                      alignItems="center"
+                      spacing={2}
                       sx={{ 
-                        flex: 1,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
+                        p: 2, 
+                        bgcolor: status?.exists ? 'action.hover' : 'background.default',
+                        borderRadius: 1,
                       }}
                     >
-                      {file.name}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </Typography>
-                    <Button
-                      size="small"
-                      color="error"
-                      onClick={handleDelete(file)}
-                      startIcon={<DeleteIcon />}
-                    >
-                      Remove
-                    </Button>
-                  </Stack>
-                ))}
+                      <InsertDriveFileIcon color={status?.exists ? "disabled" : "primary"} />
+                      <Typography 
+                        variant="body1" 
+                        sx={{ 
+                          flex: 1,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {file.name}
+                      </Typography>
+                      {status?.exists ? (
+                        <Typography variant="body2" color="text.secondary">
+                          Already exists
+                        </Typography>
+                      ) : (
+                        <>
+                          <Typography variant="body2" color="textSecondary">
+                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                          </Typography>
+                          <Button
+                            size="small"
+                            color="error"
+                            onClick={handleDelete(file)}
+                            startIcon={<DeleteIcon />}
+                          >
+                            Remove
+                          </Button>
+                        </>
+                      )}
+                    </Stack>
+                  );
+                })}
               </Stack>
               {files.length > 0 && (
                 <Button
