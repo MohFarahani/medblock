@@ -4,11 +4,25 @@ import { Box, Typography, Paper } from '@mui/material';
 import { 
   DataGrid, 
   GridColDef, 
-  GridToolbar,
+  GridToolbarContainer,
+  GridToolbarExport,
+  GridToolbarColumnsButton,
+  GridToolbarFilterButton,
 } from '@mui/x-data-grid';
 import { getDefaultColumns } from './columns';
 import { DicomData } from './types';
 import { useState } from 'react';
+
+// Custom toolbar component
+function CustomToolbar() {
+  return (
+    <GridToolbarContainer>
+      <GridToolbarColumnsButton />
+      <GridToolbarFilterButton />
+      <GridToolbarExport />
+    </GridToolbarContainer>
+  );
+}
 
 export interface TableProps {
   data: DicomData[];
@@ -78,18 +92,12 @@ export const Table = ({
             }}
             pageSizeOptions={[5, 10, 25, 50]}
             slots={{
-              toolbar: GridToolbar,
-            }}
-            slotProps={{
-              toolbar: {
-                showQuickFilter: true,
-                quickFilterProps: { debounceMs: 500 },
-              },
+              toolbar: CustomToolbar,
             }}
             sx={{
               '& .MuiDataGrid-cell': {
                 display: 'flex',
-                alignItems: 'center', // Vertical centering
+                alignItems: 'center',
                 minHeight: '100% !important',
                 maxHeight: 'none !important',
                 whiteSpace: 'normal',
@@ -97,7 +105,7 @@ export const Table = ({
                 padding: '8px',
               },
               '& .MuiDataGrid-row': {
-                minHeight: '52px !important', // Minimum height for rows
+                minHeight: '52px !important',
                 maxHeight: 'none !important',
               },
               '& .MuiDataGrid-columnHeader': {
@@ -112,7 +120,6 @@ export const Table = ({
                 backgroundColor: 'action.hover',
               },
             }}
-            density="comfortable"
             getRowHeight={() => 'auto'}
             checkboxSelection
             disableRowSelectionOnClick={true}
