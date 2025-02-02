@@ -2,11 +2,11 @@ import { Box, IconButton, Slider, Paper, Tooltip, Accordion, AccordionSummary, A
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import BrightnessIcon from '@mui/icons-material/Brightness6';
 import ContrastIcon from '@mui/icons-material/Contrast';
-import SearchIcon from '@mui/icons-material/Search';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TuneIcon from '@mui/icons-material/Tune';
+import React from 'react';
+import { MagnifierControls } from './MagnifierControls';
+import { IMAGE_CONTROLS } from '@/constants/ui';
 
 interface ImageControlsProps {
   contrast: number;
@@ -20,7 +20,7 @@ interface ImageControlsProps {
   onReset: () => void;
 }
 
-export const ImageControls = ({
+export const ImageControls = React.memo(({
   contrast,
   brightness,
   magnifierEnabled,
@@ -71,64 +71,15 @@ export const ImageControls = ({
               gap: 2,
               width: { xs: '100%', sm: 'auto' }
             }}>
-              {/* Magnifier Controls */}
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Tooltip title="Zoom Out" placement="top">
-                  <IconButton 
-                    size="small"
-                    onClick={() => onMagnificationChange(Math.max(magnification - 0.5, 1.5))}
-                    disabled={!magnifierEnabled}
-                  >
-                    <RemoveIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-
-                <Box sx={{ width: 8 }} /> {/* Spacer */}
-
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Tooltip title="Toggle Magnifier">
-                    <IconButton 
-                      onClick={onMagnifierToggle}
-                      color={magnifierEnabled ? "primary" : "default"}
-                    >
-                      <SearchIcon />
-                    </IconButton>
-                  </Tooltip>
-
-                  {magnifierEnabled && (
-                    <Box sx={{ 
-                      fontSize: '0.75rem', 
-                      textAlign: 'center',
-                      minWidth: '40px',
-                      height: '1rem',
-                      color: 'text.secondary',
-                      fontWeight: 500,
-                      mx: 1
-                    }}>
-                      {(magnification * 100).toFixed(0)}%
-                    </Box>
-                  )}
-                </Box>
-
-                <Box sx={{ width: 8 }} /> {/* Spacer */}
-
-                <Tooltip title="Zoom In" placement="top">
-                  <IconButton 
-                    size="small"
-                    onClick={() => onMagnificationChange(Math.min(magnification + 0.5, 6))}
-                    disabled={!magnifierEnabled}
-                  >
-                    <AddIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+              <MagnifierControls
+                magnifierEnabled={magnifierEnabled}
+                magnification={magnification}
+                onMagnifierToggle={onMagnifierToggle}
+                onMagnificationChange={onMagnificationChange}
+              />
 
               {/* Contrast Control */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center',
-                width: '100%'
-              }}>
+              <Box sx={IMAGE_CONTROLS.CONTROL_CONTAINER}>
                 <Tooltip title="Contrast">
                   <ContrastIcon sx={{ mr: 2 }} />
                 </Tooltip>
@@ -137,20 +88,13 @@ export const ImageControls = ({
                   onChange={(_, value) => onContrastChange(value as number)}
                   min={0}
                   max={200}
-                  sx={{ 
-                    maxWidth: { sm: 200 },
-                    width: '100%'
-                  }}
+                  sx={IMAGE_CONTROLS.SLIDER}
                   aria-label="Contrast"
                 />
               </Box>
 
               {/* Brightness Control */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center',
-                width: '100%'
-              }}>
+              <Box sx={IMAGE_CONTROLS.CONTROL_CONTAINER}>
                 <Tooltip title="Brightness">
                   <BrightnessIcon sx={{ mr: 2 }} />
                 </Tooltip>
@@ -159,10 +103,7 @@ export const ImageControls = ({
                   onChange={(_, value) => onBrightnessChange(value as number)}
                   min={0}
                   max={200}
-                  sx={{ 
-                    maxWidth: { sm: 200 },
-                    width: '100%'
-                  }}
+                  sx={IMAGE_CONTROLS.SLIDER}
                   aria-label="Brightness"
                 />
               </Box>
@@ -184,4 +125,6 @@ export const ImageControls = ({
       </Accordion>
     </Paper>
   );
-}; 
+});
+
+ImageControls.displayName = 'ImageControls'; 

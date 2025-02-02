@@ -55,3 +55,41 @@ export const COLORS = {
   BACKGROUND_OVERLAY: 'rgba(255, 255, 255, 0.9)',
   BACKDROP_BLUR: 'blur(4px)'
 };
+
+// Image Controls Styles
+export const IMAGE_CONTROLS = {
+  CONTROL_CONTAINER: {
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%'
+  },
+  SLIDER: {
+    maxWidth: { sm: 200 },
+    width: '100%'
+  }
+} as const;
+
+// Magnifier Controls Styles
+export const MAGNIFIER_CONTROLS = {
+  container: {
+    display: 'flex',
+    alignItems: 'center',
+    mb: 1
+  },
+  spacer: {
+    width: 8
+  },
+  magnifierGroup: {
+    display: 'flex',
+    alignItems: 'center'
+  },
+  percentage: {
+    fontSize: '0.75rem',
+    textAlign: 'center',
+    minWidth: '40px',
+    height: '1rem',
+    color: 'text.secondary',
+    fontWeight: 500,
+    mx: 1
+  }
+} as const;

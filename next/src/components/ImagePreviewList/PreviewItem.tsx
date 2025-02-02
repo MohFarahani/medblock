@@ -1,3 +1,4 @@
+import React from 'react';
 import {  Skeleton, ImageListItem, ImageListItemBar, IconButton, Stack, Typography } from "@mui/material";
 import { DicomData } from "@/graphql/types";
 import { useDicomData } from "@/hooks/useDicomData";
@@ -12,7 +13,36 @@ interface PreviewItemProps {
   onClick: () => void;
 }
 
-export const PreviewItem = ({ file, isSelected, onClick }: PreviewItemProps) => {
+const imageListItemStyles = {
+  mb: 2,
+  cursor: 'pointer',
+  border: '2px solid',
+  width: '100% !important',
+  aspectRatio: '4/3',
+  position: 'relative',
+  '.MuiImageListItemBar-root': {
+    transform: 'translateY(100%)',
+    opacity: 0,
+    transition: 'transform 200ms ease-in-out, opacity 200ms ease-in-out'
+  },
+  '&:hover': {
+    opacity: 0.8,
+    '.MuiImageListItemBar-root': {
+      transform: 'translateY(0)',
+      opacity: 1
+    }
+  }
+} as const;
+
+const imageStyles = {
+  objectFit: 'contain' as const
+};
+
+const iconButtonStyles = {
+  color: 'rgba(255, 255, 255, 0.54)'
+} as const;
+
+export const PreviewItem = React.memo(({ file, isSelected, onClick }: PreviewItemProps) => {
   const { data: dicomData, loading, error } = useDicomData(file.FilePath);
 
   if (loading) {
@@ -23,31 +53,26 @@ export const PreviewItem = ({ file, isSelected, onClick }: PreviewItemProps) => 
     return null;
   }
 
-  
+  const TitleContent = (
+    <Stack direction="row" spacing={1} alignItems="center">
+      <PersonIcon fontSize="small" />
+      <Typography variant="body1">{dicomData.PatientName}</Typography>
+    </Stack>
+  );
+
+  const SubtitleContent = (
+    <Stack direction="row" spacing={1} alignItems="center">
+      <DescriptionIcon fontSize="small" />
+      <Typography variant="body2">{dicomData.StudyDescription}</Typography>
+    </Stack>
+  );
 
   return (
     <ImageListItem 
       onClick={onClick}
       sx={{
-        mb: 2,
-        cursor: 'pointer',
-        border: '2px solid',
-        borderColor: isSelected ? 'primary.main' : 'transparent',
-        '&:hover': {
-          opacity: 0.8,
-          '.MuiImageListItemBar-root': {
-            transform: 'translateY(0)',
-            opacity: 1
-          }
-        },
-        width: '100% !important',
-        aspectRatio: '4/3',
-        position: 'relative',
-        '.MuiImageListItemBar-root': {
-          transform: 'translateY(100%)',
-          opacity: 0,
-          transition: 'transform 200ms ease-in-out, opacity 200ms ease-in-out'
-        }
+        ...imageListItemStyles,
+        borderColor: isSelected ? 'primary.main' : 'transparent'
       }}
     >
       <Image 
@@ -55,26 +80,14 @@ export const PreviewItem = ({ file, isSelected, onClick }: PreviewItemProps) => 
         alt={`Preview - ${file.PatientName}`}
         fill
         sizes="(max-width: 768px) 100vw, 33vw"
-        style={{
-          objectFit: 'contain'
-        }}
+        style={imageStyles}
       />
       <ImageListItemBar
-        title={
-          <Stack direction="row" spacing={1} alignItems="center">
-            <PersonIcon fontSize="small" />
-            <Typography variant="body1">{dicomData.PatientName}</Typography>
-          </Stack>
-        }
-        subtitle={
-          <Stack direction="row" spacing={1} alignItems="center">
-            <DescriptionIcon fontSize="small" />
-            <Typography variant="body2">{dicomData.StudyDescription}</Typography>
-          </Stack>
-        }
+        title={TitleContent}
+        subtitle={SubtitleContent}
         actionIcon={
           <IconButton
-            sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+            sx={iconButtonStyles}
             aria-label={`info about ${file.PatientName}`}
           >
             <InfoIcon />
@@ -83,4 +96,6 @@ export const PreviewItem = ({ file, isSelected, onClick }: PreviewItemProps) => 
       />
     </ImageListItem>
   );
-}; 
+});
+
+PreviewItem.displayName = 'PreviewItem'; 
