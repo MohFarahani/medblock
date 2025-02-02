@@ -8,25 +8,42 @@ import {
 } from '@mui/x-data-grid';
 import { getDefaultColumns } from './columns';
 import { DicomData } from './types';
+import { useState } from 'react';
 
 export interface TableProps {
   data: DicomData[];
   loading?: boolean;
   columns?: GridColDef[];
   title?: string;
+  onSelectionChange?: (selectedRows: DicomData[]) => void;
 }
 
 export const Table = ({ 
-  data = [], // Add default value
+  data = [],
   loading = false, 
-  columns = getDefaultColumns(),
-  title = 'Data Table'
+  columns,
+  title = 'Data Table',
+  onSelectionChange
 }: TableProps) => {
-  // Ensure data is an array and all items have an id
-  const safeData = Array.isArray(data) ? data.map(item => ({
+  const [selectionModel, setSelectionModel] = useState<any[]>([]);
+  
+  // Ensure data is an array and all items have a unique id
+  const safeData = Array.isArray(data) ? data.map((item, index) => ({
     ...item,
-    id: item.id || crypto.randomUUID()
+    id: `${item.FilePath}-${index}` // Combine FilePath with index for uniqueness
   })) : [];
+
+  const handleSelectionChange = (newSelectionModel: any) => {
+    setSelectionModel(newSelectionModel);
+    const selectedRows = safeData.filter(row => newSelectionModel.includes(row.id));
+    if (onSelectionChange) {
+      onSelectionChange(selectedRows);
+    }
+  };
+
+  // Use selectedRows when getting columns
+  const selectedRows = safeData.filter(row => selectionModel.includes(row.id));
+  const effectiveColumns = columns || getDefaultColumns(selectedRows);
 
   return (
     <Paper 
@@ -54,7 +71,7 @@ export const Table = ({
         ) : (
           <DataGrid
             rows={safeData}
-            columns={columns}
+            columns={effectiveColumns}
             loading={loading}
             initialState={{
               pagination: {
@@ -80,8 +97,11 @@ export const Table = ({
               },
             }}
             density="comfortable"
-            disableRowSelectionOnClick
             getRowHeight={() => 'auto'}
+            checkboxSelection
+            disableRowSelectionOnClick={true}
+            rowSelectionModel={selectionModel}
+            onRowSelectionModelChange={handleSelectionChange}
           />
         )}
       </Box>
