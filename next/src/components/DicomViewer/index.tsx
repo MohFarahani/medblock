@@ -4,6 +4,7 @@ import { Box, CircularProgress, Typography } from '@mui/material';
 import { useDicomData } from '@/hooks/useDicomData';
 import { DicomInfo } from './DicomInfo';
 import { ImageViewer } from './ImageViewer';
+import ErrorDisplay from '../ErrorDisplay';
 
 interface DicomViewerProps {
   filePath: string;
@@ -18,7 +19,7 @@ const DicomViewer = ({
   showInfo = true,
   showModal = true 
 }: DicomViewerProps) => {
-  const { data: dicomData, loading, error } = useDicomData(filePath);
+  const { data: dicomData, loading, error, refetch } = useDicomData(filePath);
 
   if (loading) {
     return (
@@ -29,13 +30,7 @@ const DicomViewer = ({
   }
 
   if (error) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-        <Typography color="error">
-          Error: {error}
-        </Typography>
-      </Box>
-    );
+    return <ErrorDisplay error={error} onRetry={refetch} />;
   }
 
   if (!dicomData || !dicomData.image?.data) {

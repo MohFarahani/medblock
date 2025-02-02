@@ -1,8 +1,10 @@
 'use client';
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, ErrorInfo, ReactNode } from 'react';
+import ErrorDisplay from './ErrorDisplay';
 
 interface Props {
   children: ReactNode;
+  fallback?: ReactNode;
 }
 
 interface State {
@@ -26,12 +28,10 @@ class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
-      return (
-        <div>
-          <h1>Something went wrong.</h1>
-          <pre>{this.state.error?.message}</pre>
-        </div>
-      );
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+      return <ErrorDisplay error={this.state.error || 'An unexpected error occurred'} />;
     }
 
     return this.props.children;

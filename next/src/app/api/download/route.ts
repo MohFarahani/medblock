@@ -1,20 +1,21 @@
 import { NextRequest } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { AppError, handleApiError } from '@/utils/errorHandling';
 
 export async function GET(request: NextRequest) {
   try {
     const filePath = request.nextUrl.searchParams.get('filePath');
     
     if (!filePath) {
-      return new Response('No file path provided', { status: 400 });
+      throw new AppError('No file path provided', 'MISSING_FILE_PATH', 400);
     }
 
     // Verify file exists
     try {
       await fs.access(filePath);
     } catch {
-      return new Response('File not found', { status: 404 });
+      throw new AppError('File not found', 'FILE_NOT_FOUND', 404);
     }
 
     // Read file
@@ -30,7 +31,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Download error:', error);
-    return new Response('Internal server error', { status: 500 });
+    return handleApiError(error);
   }
 }
