@@ -1,17 +1,11 @@
-import { models } from '@/db/models';
+import { PatientRepository } from '@/repositories';
+
+const patientRepo = new PatientRepository();
 
 export const patientQueries = {
   patients: async () => {
     try {
-      return await models.Patient.findAll({
-        include: [{
-          model: models.Study,
-          include: [{
-            model: models.Series,
-            include: [models.File]
-          }]
-        }]
-      });
+      return await patientRepo.findAll();
     } catch (error) {
       console.error('Query patients error:', error);
       throw error;
@@ -20,15 +14,7 @@ export const patientQueries = {
 
   patient: async (_: unknown, { idPatient }: { idPatient: string }) => {
     try {
-      const patient = await models.Patient.findByPk(idPatient, {
-        include: [{
-          model: models.Study,
-          include: [{
-            model: models.Series,
-            include: [models.File]
-          }]
-        }]
-      });
+      const patient = await patientRepo.findById(parseInt(idPatient));
 
       if (!patient) {
         throw new Error(`Patient with ID ${idPatient} not found`);

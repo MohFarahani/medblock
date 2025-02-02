@@ -3,12 +3,15 @@ import { Transaction } from 'sequelize';
 import type { DicomUploadInput } from '../../types';
 import type { SqlError } from '@/types/errors';
 
-// Import mutation functions
-import { createOrFindPatient } from './patient';
-import { createStudy } from './study';
-import { createOrFindModality } from './modality';
-import { createSeries } from './series';
-import { createFile } from './file';
+// Import repositories
+import { 
+  PatientRepository, 
+  StudyRepository, 
+  SeriesRepository,
+
+} from '@/repositories';
+import { FileRepository } from '@/repositories/FileRepository';
+import { ModalityRepository } from '@/repositories/ModalityRepository';
 
 // Custom error class
 export class DicomUploadError extends Error {
@@ -55,54 +58,55 @@ const safeRollback = async (transaction: Transaction | null): Promise<void> => {
   }
 };
 
+// Initialize repositories
+const patientRepo = new PatientRepository();
+const studyRepo = new StudyRepository();
+const seriesRepo = new SeriesRepository();
+const fileRepo = new FileRepository();
+const modalityRepo = new ModalityRepository();
+
 const processDicomUploadWithRetry = async (input: DicomUploadInput, retryCount = 0) => {
   let transaction: Transaction | null = null;
   console.log('INPUT:', input);
   
   try {
-    // Start transaction
     transaction = await sequelize.transaction({
       isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE
     });
 
-    // Create or find patient
-    const patient = await createOrFindPatient({
+    // Create or find patient using repository
+    const [patient] = await patientRepo.findOrCreate({
       Name: input.patientName,
       CreatedDate: new Date()
-    }, transaction);
+    }, { transaction });
 
-    // Create study
-    const study = await createStudy({
+    // Create study using repository
+    const study = await studyRepo.create({
       idPatient: patient.idPatient,
       StudyName: input.studyDescription || 'Unknown Study',
       StudyDate: formatDateString(input.studyDate),
       CreatedDate: new Date(),
-    }, transaction);
+    }, { transaction });
 
-    // Create or find modality
-    const modality = await createOrFindModality({
-      Name: input.modality
-    }, transaction);
+    // Create or find modality using repository
+    const [modality] = await modalityRepo.findOrCreate(input.modality);
 
-    // Create series
-    const series = await createSeries({
+    // Create series using repository
+    const series = await seriesRepo.create({
       idPatient: patient.idPatient,
       idStudy: study.idStudy,
       idModality: modality.idModality,
       SeriesName: input.seriesDescription || 'Unknown Series',
       CreatedDate: new Date(),
-    }, transaction);
+    }, { transaction });
 
-    // Create file
-    const file = await createFile({
-      idPatient: patient.idPatient,
-      idStudy: study.idStudy,
+    // Create file using repository
+    const file = await fileRepo.create({
       idSeries: series.idSeries,
       FilePath: input.filePath,
       CreatedDate: new Date(),
-    }, transaction);
+    }, { transaction });
 
-    // Commit transaction
     await transaction.commit();
     return file;
 

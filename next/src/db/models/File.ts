@@ -1,70 +1,45 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../connection';
-import type { Patient } from './Patient';
-import type { Study } from './Study';
-import type { Series } from './Series';
-import type { Modality } from './Modality';
+import Series from './Series';
 
-interface FileAttributes {
-  idPatient: number;
-  idStudy: number;
-  idSeries: number;
-  idFile: number;
-  FilePath: string;
-  CreatedDate: Date;
+class File extends Model {
+  declare idFile: number;
+  declare idSeries: number;
+  declare FilePath: string;
+  declare CreatedDate: Date;
 }
 
-interface FileInstance extends Model<FileAttributes>, FileAttributes {
-  Patient?: Patient & { Name: string };
-  Study?: Study & { StudyDate: Date; StudyName: string };
-  Series?: Series & { 
-    SeriesName: string;
-    Modality?: Modality & { Name: string };
-  };
-}
-
-export const File = sequelize.define<FileInstance>(
-  'File',
+File.init(
   {
-    idPatient: {
+    idFile: {
       type: DataTypes.INTEGER,
-      references: {
-        model: 'Patients',
-        key: 'idPatient',
-      },
-    },
-    idStudy: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: 'Studies',
-        key: 'idStudy',
-      },
+      autoIncrement: true,
+      primaryKey: true,
     },
     idSeries: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       references: {
-        model: 'Series',
+        model: Series,
         key: 'idSeries',
       },
     },
-    idFile: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
     FilePath: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(1024),
       allowNull: false,
     },
     CreatedDate: {
       type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+      allowNull: false,
     },
   },
   {
+    sequelize,
+    modelName: 'File',
     tableName: 'Files',
     timestamps: false,
   }
 );
 
-export type { FileInstance };
+export default File;
+

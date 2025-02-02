@@ -1,4 +1,4 @@
-import { models } from '@/db/models';
+import { Patient } from '@/db/models';
 import type { Transaction } from 'sequelize';
 
 export interface CreatePatientInput {
@@ -10,7 +10,7 @@ export const createOrFindPatient = async (
   input: CreatePatientInput,
   transaction: Transaction
 ) => {
-  const [patient] = await models.Patient.findOrCreate({
+  const [patient] = await Patient.findOrCreate({
     where: { Name: input.Name },
     defaults: { 
       Name: input.Name,

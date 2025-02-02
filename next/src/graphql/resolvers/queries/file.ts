@@ -1,10 +1,11 @@
-import {  models } from '@/db/models';
-import { FileInstance } from '@/db/models/File';
+import { FileRepository } from '@/repositories';
+
+const fileRepo = new FileRepository();
 
 export const fileQueries = {
   files: async () => {
     try {
-      return await models.File.findAll();
+      return await fileRepo.findAll();
     } catch (error) {
       console.error('Query files error:', error);
       throw error;
@@ -13,7 +14,7 @@ export const fileQueries = {
 
   file: async (_: unknown, { idFile }: { idFile: string }) => {
     try {
-      const file = await models.File.findByPk(idFile);
+      const file = await fileRepo.findById(parseInt(idFile));
 
       if (!file) {
         throw new Error(`File with ID ${idFile} not found`);
@@ -25,36 +26,14 @@ export const fileQueries = {
       throw error;
     }
   },
+
   getAllDicomFiles: async () => {
     try {
-      const files = await models.File.findAll({
-        include: [
-          {
-            model: models.Patient,
-            attributes: ['Name'],
-            required: true,
-          },
-          {
-            model: models.Study,
-            attributes: ['StudyDate', 'StudyName'],
-            required: true,
-          },
-          {
-            model: models.Series,
-            attributes: ['SeriesName'],
-            required: true,
-            include: [
-              {
-                model: models.Modality,
-                attributes: ['Name'],
-                required: true,
-              },
-            ],
-          },
-        ],
-      });
-
-      return files.map((file: FileInstance) => ({
+      // This query needs special handling due to its complex joins
+      // You might want to add a specific method in FileRepository for this
+      const files = await fileRepo.findAllWithRelations();
+      
+      return files.map(file => ({
         PatientName: file.Patient?.Name ?? '',
         StudyDate: file.Study?.StudyDate?.toISOString() ?? '',
         StudyDescription: file.Study?.StudyName ?? '',
@@ -66,6 +45,5 @@ export const fileQueries = {
       console.error('Query getAllDicomFiles error:', error);
       throw error;
     }
-  },
-
+  }
 };
