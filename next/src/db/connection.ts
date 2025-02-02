@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize';
 import mysql2 from 'mysql2';
-import { createTables } from './createTables';
+import { LogService } from '../utils/logging';
+import { AppError, ErrorCodes } from '../utils/errorHandling';
 
 const sequelize = new Sequelize({
   dialect: 'mysql',
@@ -10,18 +11,24 @@ const sequelize = new Sequelize({
   password: process.env.DB_PASS || 'dicom_password',
   database: process.env.DB_NAME || 'dicom_db',
   port: parseInt(process.env.DB_PORT || '3306'),
-  logging: console.log,
+  logging: (msg) => LogService.debug('Sequelize Query:', { query: msg }),
 });
+
 async function initializeDatabase() {
   try {
     await sequelize.authenticate();
-    console.log('Database connection has been established successfully.');
+    LogService.info('Database connection has been established successfully.');
     
-    // Create tables if they don't exist
-    await createTables();
+    // This will create all tables based on your models
+    await sequelize.sync();
+    LogService.info('Database tables created successfully');
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
-    throw error;
+    LogService.error('Database initialization failed', error);
+    throw new AppError(
+      'Failed to initialize database connection',
+      ErrorCodes.SQL_ERROR,
+      500
+    );
   }
 }
 
