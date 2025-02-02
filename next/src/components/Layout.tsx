@@ -12,7 +12,7 @@ import {
   Toolbar,
   Typography
 } from '@mui/material';
-import { Download, Upload, Preview, Menu } from '@mui/icons-material';
+import { Upload, Preview, Menu, Home } from '@mui/icons-material';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -28,7 +28,7 @@ const Layout = ({ children }: LayoutProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const menuItems = [
-    { text: 'Download', icon: <Download />, path: '/download' },
+    { text: 'Home', icon: <Home />, path: '/download' },
     { text: 'Upload', icon: <Upload />, path: '/upload' },
     { text: 'Preview', icon: <Preview />, path: '/preview' },
   ];
