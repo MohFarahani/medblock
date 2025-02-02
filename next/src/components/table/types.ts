@@ -10,3 +10,13 @@ export interface TableProps {
   columns?: GridColDef[];
   title?: string;
 }
+
+export interface DicomData {
+  id?: string | number;
+  PatientName: string;
+  StudyDate: string;
+  StudyDescription?: string;
+  SeriesDescription?: string;
+  Modality: string;
+  FilePath: string;
+}

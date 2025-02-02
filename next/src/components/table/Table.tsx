@@ -4,29 +4,58 @@ import { Box, Typography, Paper } from '@mui/material';
 import { 
   DataGrid, 
   GridColDef, 
-  GridToolbar,
+  GridToolbarContainer,
+  GridToolbarExport,
+  GridToolbarColumnsButton,
+  GridToolbarFilterButton,
 } from '@mui/x-data-grid';
 import { getDefaultColumns } from './columns';
 import { DicomData } from './types';
+import { useState } from 'react';
+
+// Custom toolbar component
+function CustomToolbar() {
+  return (
+    <GridToolbarContainer>
+      <GridToolbarColumnsButton />
+      <GridToolbarFilterButton />
+      <GridToolbarExport />
+    </GridToolbarContainer>
+  );
+}
 
 export interface TableProps {
   data: DicomData[];
   loading?: boolean;
   columns?: GridColDef[];
   title?: string;
+  onSelectionChange?: (selectedRows: DicomData[]) => void;
 }
 
 export const Table = ({ 
-  data = [], // Add default value
+  data = [],
   loading = false, 
-  columns = getDefaultColumns(),
-  title = 'Data Table'
+  columns,
+  title = 'Data Table',
+  onSelectionChange
 }: TableProps) => {
-  // Ensure data is an array and all items have an id
-  const safeData = Array.isArray(data) ? data.map(item => ({
+  const [selectionModel, setSelectionModel] = useState<any[]>([]);
+  
+  const safeData = Array.isArray(data) ? data.map((item, index) => ({
     ...item,
-    id: item.id || crypto.randomUUID()
+    id: `${item.FilePath}-${index}`
   })) : [];
+
+  const handleSelectionChange = (newSelectionModel: any) => {
+    setSelectionModel(newSelectionModel);
+    const selectedRows = safeData.filter(row => newSelectionModel.includes(row.id));
+    if (onSelectionChange) {
+      onSelectionChange(selectedRows);
+    }
+  };
+
+  const selectedRows = safeData.filter(row => selectionModel.includes(row.id));
+  const effectiveColumns = columns || getDefaultColumns(selectedRows);
 
   return (
     <Paper 
@@ -54,7 +83,7 @@ export const Table = ({
         ) : (
           <DataGrid
             rows={safeData}
-            columns={columns}
+            columns={effectiveColumns}
             loading={loading}
             initialState={{
               pagination: {
@@ -63,15 +92,27 @@ export const Table = ({
             }}
             pageSizeOptions={[5, 10, 25, 50]}
             slots={{
-              toolbar: GridToolbar,
-            }}
-            slotProps={{
-              toolbar: {
-                showQuickFilter: true,
-                quickFilterProps: { debounceMs: 500 },
-              },
+              toolbar: CustomToolbar,
             }}
             sx={{
+              '& .MuiDataGrid-cell': {
+                display: 'flex',
+                alignItems: 'center',
+                minHeight: '100% !important',
+                maxHeight: 'none !important',
+                whiteSpace: 'normal',
+                lineHeight: '1.2em',
+                padding: '8px',
+              },
+              '& .MuiDataGrid-row': {
+                minHeight: '52px !important',
+                maxHeight: 'none !important',
+              },
+              '& .MuiDataGrid-columnHeader': {
+                minHeight: '52px !important',
+                maxHeight: 'none !important',
+                alignItems: 'center',
+              },
               '& .MuiDataGrid-cell:hover': {
                 color: 'primary.main',
               },
@@ -79,9 +120,11 @@ export const Table = ({
                 backgroundColor: 'action.hover',
               },
             }}
-            density="comfortable"
-            disableRowSelectionOnClick
             getRowHeight={() => 'auto'}
+            checkboxSelection
+            disableRowSelectionOnClick={true}
+            rowSelectionModel={selectionModel}
+            onRowSelectionModelChange={handleSelectionChange}
           />
         )}
       </Box>
