@@ -23,6 +23,8 @@ export const PreviewItem = ({ file, isSelected, onClick }: PreviewItemProps) => 
     return null;
   }
 
+  
+
   return (
     <ImageListItem 
       onClick={onClick}
@@ -61,13 +63,13 @@ export const PreviewItem = ({ file, isSelected, onClick }: PreviewItemProps) => 
         title={
           <Stack direction="row" spacing={1} alignItems="center">
             <PersonIcon fontSize="small" />
-            <Typography variant="body1">{file.PatientName}</Typography>
+            <Typography variant="body1">{dicomData.PatientName}</Typography>
           </Stack>
         }
         subtitle={
           <Stack direction="row" spacing={1} alignItems="center">
             <DescriptionIcon fontSize="small" />
-            <Typography variant="body2">{file.StudyDescription}</Typography>
+            <Typography variant="body2">{dicomData.StudyDescription}</Typography>
           </Stack>
         }
         actionIcon={
