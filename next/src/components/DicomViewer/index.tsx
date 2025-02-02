@@ -19,7 +19,7 @@ const DicomViewer = ({
   showInfo = true,
   showModal = true 
 }: DicomViewerProps) => {
-  const { data: dicomData, loading, error, refetch } = useDicomData(filePath);
+  const { data: dicomData, loading, error,refetch } = useDicomData(filePath);
 
   if (loading) {
     return (
