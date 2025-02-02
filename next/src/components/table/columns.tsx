@@ -52,11 +52,15 @@ export const getDefaultColumns = (selectedRows: DicomDataTable[] = []): GridColD
       field: 'PatientName',
       headerName: 'Patient Name',
       flex: 1,
+      headerAlign: 'center',
+      align: 'center',
     },
     {
       field: 'StudyDate',
       headerName: 'Study Date',
       flex: 1,
+      headerAlign: 'center',
+      align: 'center',
       renderCell: (params: GridRenderCellParams) => {
         return formatDateToMonthDayYear(params.row?.StudyDate);
       },
@@ -65,17 +69,23 @@ export const getDefaultColumns = (selectedRows: DicomDataTable[] = []): GridColD
       field: 'SeriesDescription',
       headerName: 'Series Description',
       flex: 1,
+      headerAlign: 'center',
+      align: 'center',
     },
     {
       field: 'Modality',
       headerName: 'Modality',
       flex: 1,
+      headerAlign: 'center',
+      align: 'center',
     },
     {
       field: 'download',
       headerName: 'Download',
       flex: 1,
       sortable: false,
+      headerAlign: 'center',
+      align: 'center',
       renderCell: (params: GridRenderCellParams<DicomDataTable>) => {
         const isRowSelected = selectedRows.some(row => row.id === params.row.id);
         const hasOtherRowsSelected = selectedRows.length > 0 && !isRowSelected;
@@ -102,6 +112,8 @@ export const getDefaultColumns = (selectedRows: DicomDataTable[] = []): GridColD
       headerName: 'View Image',
       flex: 1,
       sortable: false,
+      headerAlign: 'center',
+      align: 'center',
       renderCell: (params) => (
         <ViewButton
           filePath={params.row.FilePath} 

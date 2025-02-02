@@ -27,10 +27,9 @@ export const Table = ({
 }: TableProps) => {
   const [selectionModel, setSelectionModel] = useState<any[]>([]);
   
-  // Ensure data is an array and all items have a unique id
   const safeData = Array.isArray(data) ? data.map((item, index) => ({
     ...item,
-    id: `${item.FilePath}-${index}` // Combine FilePath with index for uniqueness
+    id: `${item.FilePath}-${index}`
   })) : [];
 
   const handleSelectionChange = (newSelectionModel: any) => {
@@ -41,7 +40,6 @@ export const Table = ({
     }
   };
 
-  // Use selectedRows when getting columns
   const selectedRows = safeData.filter(row => selectionModel.includes(row.id));
   const effectiveColumns = columns || getDefaultColumns(selectedRows);
 
@@ -89,6 +87,24 @@ export const Table = ({
               },
             }}
             sx={{
+              '& .MuiDataGrid-cell': {
+                display: 'flex',
+                alignItems: 'center', // Vertical centering
+                minHeight: '100% !important',
+                maxHeight: 'none !important',
+                whiteSpace: 'normal',
+                lineHeight: '1.2em',
+                padding: '8px',
+              },
+              '& .MuiDataGrid-row': {
+                minHeight: '52px !important', // Minimum height for rows
+                maxHeight: 'none !important',
+              },
+              '& .MuiDataGrid-columnHeader': {
+                minHeight: '52px !important',
+                maxHeight: 'none !important',
+                alignItems: 'center',
+              },
               '& .MuiDataGrid-cell:hover': {
                 color: 'primary.main',
               },
