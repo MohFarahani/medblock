@@ -46,12 +46,16 @@ export const Table = <T extends object>({
   
   const safeData = Array.isArray(data) ? data.map((item, index) => ({
     ...item,
-    id: typeof idField === 'function' ? idField(item) : item[idField] || `row-${index}`
+    id: typeof idField === 'function' 
+      ? idField(item) 
+      : String(item[idField] ?? `row-${index}`)
   })) : [];
 
   const handleSelectionChange = (newSelectionModel: GridRowSelectionModel) => {
     setSelectionModel(newSelectionModel);
-    const selectedRows = safeData.filter(row => newSelectionModel.includes(row.id));
+    const selectedRows = safeData.filter(row => 
+      newSelectionModel.includes(String(row.id))
+    );
     if (onSelectionChange) {
       onSelectionChange(selectedRows);
     }
