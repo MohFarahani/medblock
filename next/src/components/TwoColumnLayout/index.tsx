@@ -14,9 +14,9 @@ const TwoColumnLayout = ({
   rightWidth = 9 
 }: TwoColumnLayoutProps) => {
   return (
-    <Grid container spacing={2} sx={{ height: 'calc(100vh - 64px)' }}>
+    <Grid container spacing={2} height='100%' >
       {/* Left column */}
-      <Grid item xs={leftWidth}>
+      <Grid item xs={leftWidth}  height='100%'>
         <Box sx={{ 
           height: '100%', 
           overflowY: 'auto',
@@ -27,7 +27,7 @@ const TwoColumnLayout = ({
       </Grid>
 
       {/* Right column */}
-      <Grid item xs={rightWidth}>
+      <Grid item xs={rightWidth}  height='100%'>
         <Box sx={{ height: '100%', p: 2 }}>
           {rightContent}
         </Box>

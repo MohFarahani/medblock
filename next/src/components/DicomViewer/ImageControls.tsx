@@ -36,6 +36,7 @@ export const ImageControls = ({
         p: 2,
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
         backdropFilter: 'blur(4px)',
+        height: '100%',
       }}
     >
       <Box 

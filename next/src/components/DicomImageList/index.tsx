@@ -17,7 +17,7 @@ export const DicomImageList = ({
   return (
     <Box sx={{ 
       height: 'calc(100vh - 100px)', 
-      overflowY: 'auto',
+      overflowY: 'scroll',
       '&::-webkit-scrollbar': {
         width: '8px',
       },

@@ -28,7 +28,7 @@ const Layout = ({ children }: LayoutProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const menuItems = [
-    { text: 'Home', icon: <Home />, path: '/download' },
+    { text: 'Home', icon: <Home />, path: '/home' },
     { text: 'Upload', icon: <Upload />, path: '/upload' },
     { text: 'Preview', icon: <Preview />, path: '/preview' },
   ];
@@ -75,10 +75,12 @@ const Layout = ({ children }: LayoutProps) => {
   );
 
   return (
-    <Box sx={{ 
-      display: 'flex',
-      minHeight: '100vh',
-    }}>
+    <Box 
+      maxWidth="lg" 
+      sx={{ 
+        height: '100vh',
+      }}
+    >
       {/* Mobile AppBar */}
       <AppBar position="fixed" sx={{ display: { sm: 'none' } }}>
         <Toolbar>
@@ -149,10 +151,8 @@ const Layout = ({ children }: LayoutProps) => {
           p: 3,
           width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
           marginTop: { xs: '64px', sm: 0 },
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: '100vh',
-          boxSizing: 'border-box',
+          height: '100%',
+          marginLeft: { sm: `${DRAWER_WIDTH}px` },
         }}
       >
         {children}

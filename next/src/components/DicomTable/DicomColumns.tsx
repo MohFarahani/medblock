@@ -142,7 +142,7 @@ export const DicomColumns = (selectedRows: DicomDataTable[] = []): GridColDef<Di
           <ViewButton
             filePath={params.row.FilePath}
             selectedFiles={selectedRows.length > 0 ? selectedRows.map(row => row.FilePath) : [params.row.FilePath]}
-            routePath={selectedRows.length > 1 ? "preview/multi" : "download/preview"}
+            routePath={selectedRows.length > 1 ? "preview/multi" : "home/preview"}
             disabled={hasOtherRowsSelected}
           />
         );

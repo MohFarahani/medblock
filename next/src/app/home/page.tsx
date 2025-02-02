@@ -5,7 +5,7 @@ import DicomTable from '@/components/DicomTable/DicomTable';
 import { useGetAllDicomFiles } from '@/hooks/useGetAllDicomFiles';
 
 
-export default function DownloadPage() {
+const HomePage = () => {
   const { data, loading, error }
    = useGetAllDicomFiles();
 
@@ -23,3 +23,5 @@ export default function DownloadPage() {
     </Box>
   );
 }
+
+export default HomePage;

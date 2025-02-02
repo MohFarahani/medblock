@@ -40,14 +40,14 @@ const DicomViewer = ({
 
   if (!dicomData || !dicomData.image?.data) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px" >
         <Typography>No image data available</Typography>
       </Box>
     );
   }
 
   return (
-    <Box>
+    <Box height='100%'>
       {showInfo && <DicomInfo dicomData={dicomData} />}
       <ImageViewer 
         dicomData={dicomData} 

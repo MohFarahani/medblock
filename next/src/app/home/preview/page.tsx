@@ -39,10 +39,10 @@ const DicomViewerPage = () => {
       <Box sx={{ mb: 4 }}>
         <Button 
           variant="contained" 
-          onClick={() => router.push('/download')}
+          onClick={() => router.push('/home')}
           startIcon={<ArrowBackIcon />}
         >
-          Back to Download
+          Back to Home
         </Button>
       </Box>
       {filePath && <DicomViewer filePath={filePath} />}
