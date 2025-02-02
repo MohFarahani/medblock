@@ -6,6 +6,7 @@ import { ROUTES } from '@/constants/routes';
 import axios from 'axios';
 import { useApolloClient } from '@apollo/client';
 import { LogService } from '@/utils/logging';
+import { DateService } from '@/utils/dates';
 
 interface ProcessDicomResponse {
   error?: string;
@@ -76,7 +77,7 @@ export const useDicomUpload = () => {
           variables: {
             input: {
               patientName: dicomData.PatientName,
-              studyDate: dicomData.StudyDate || new Date().toISOString(),
+              studyDate: dicomData.StudyDate ,
               studyDescription: dicomData.StudyDescription || '',
               seriesDescription: dicomData.SeriesDescription || '',
               modality: dicomData.Modality,
@@ -86,12 +87,15 @@ export const useDicomUpload = () => {
         });
   
         if (graphQLData?.processDicomUpload) {
+          // Use DateService to properly format the DICOM date
+          const formattedDate = DateService.formatDateString(dicomData.StudyDate);
+          
           newData.push({
             id: Date.now() + Math.random().toString(),
             PatientName: dicomData.PatientName,
-            StudyDate: dicomData.StudyDate,
-            StudyDescription: dicomData.StudyDescription || 'N/A',
-            SeriesDescription: dicomData.SeriesDescription || 'N/A',
+            StudyDate: DateService.toISODate(formattedDate),
+            StudyDescription: dicomData.StudyDescription,
+            SeriesDescription: dicomData.SeriesDescription,
             Modality: dicomData.Modality,
             FilePath: graphQLData.processDicomUpload.FilePath,
           });

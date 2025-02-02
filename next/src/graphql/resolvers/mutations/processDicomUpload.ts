@@ -35,13 +35,7 @@ const isDeadlockError = (error: unknown): error is SqlError => {
   );
 };
 
-const formatDateString = (dateString: string): Date => {
-  const year = dateString.substring(0, 4);
-  const month = dateString.substring(4, 6);
-  const day = dateString.substring(6, 8);
-  const formattedDate = `${year}-${month}-${day}`;
-  return new Date(formattedDate);
-};
+
 
 const safeRollback = async (transaction: Transaction | null): Promise<void> => {
   if (!transaction) return;
@@ -57,7 +51,6 @@ const safeRollback = async (transaction: Transaction | null): Promise<void> => {
 
 const processDicomUploadWithRetry = async (input: DicomUploadInput, retryCount = 0) => {
   let transaction: Transaction | null = null;
-  console.log('INPUT:', input);
   
   try {
     // Start transaction
@@ -75,7 +68,7 @@ const processDicomUploadWithRetry = async (input: DicomUploadInput, retryCount =
     const study = await createStudy({
       idPatient: patient.idPatient,
       StudyName: input.studyDescription || 'Unknown Study',
-      StudyDate: formatDateString(input.studyDate),
+      StudyDate: DateService.formatDateString(input.studyDate),
       CreatedDate: new Date(),
     }, transaction);
 
@@ -129,6 +122,7 @@ import { validateInput } from '@/graphql/validation/validator';
 import { dicomUploadSchema } from '@/graphql/validation/schemas';
 import { LogService } from '@/utils/logging';
 import { AppError } from '@/utils/errorHandling';
+import { DateService } from '@/utils/dates';
 
 // Main resolver function
 export const processDicomUpload = async (_: unknown, { input }: { input: DicomUploadInput }) => {
