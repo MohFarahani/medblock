@@ -48,6 +48,8 @@ export const ImageViewer = ({ dicomData, showControls = true, showModal = true }
         sx={{
           filter: `contrast(${contrast}%) brightness(${brightness}%)`,
           mb: showControls ? 2 : 0,
+          position: 'relative', 
+          display: 'inline-block',
         }}
       >
         <Magnifier

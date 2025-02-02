@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from 'next/navigation';
 import { DicomData } from "@/graphql/types";
 import DicomPreviewLayout from "@/components/DicomPreviewLayout";
-
+import { Box, Button, Container } from "@mui/material";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useRouter } from "next/navigation";
 const MultiPreviewPage = () => {
   const searchParams = useSearchParams();
   const [selectedFilePath, setSelectedFilePath] = useState<string>('');
   const [files, setFiles] = useState<string[]>([]);
-
+  const router = useRouter();
   useEffect(() => {
     const filesParam = searchParams.get('files');
     if (filesParam) {
@@ -34,12 +36,24 @@ const MultiPreviewPage = () => {
   }));
 
   return (
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ mb: 4 }}>
+      <Button 
+        variant="contained" 
+        onClick={() => router.push('/home')}
+        startIcon={<ArrowBackIcon />}
+      >
+        Back to Home
+      </Button>
+    </Box>
     <DicomPreviewLayout
       files={filesList}
       loading={false}
       selectedFilePath={selectedFilePath}
       onSelectImage={setSelectedFilePath}
     />
+    </Container>
+
   );
 };
 
