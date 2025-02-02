@@ -75,7 +75,10 @@ const Layout = ({ children }: LayoutProps) => {
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ 
+      display: 'flex',
+      minHeight: '100vh',
+    }}>
       {/* Mobile AppBar */}
       <AppBar position="fixed" sx={{ display: { sm: 'none' } }}>
         <Toolbar>
@@ -142,12 +145,14 @@ const Layout = ({ children }: LayoutProps) => {
       <Box
         component="main"
         sx={{
-          display: 'flex',
           flexGrow: 1,
           p: 3,
           width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
           marginTop: { xs: '64px', sm: 0 },
-          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
+          boxSizing: 'border-box',
         }}
       >
         {children}

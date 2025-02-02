@@ -68,13 +68,20 @@ export const Table = <T extends object>({
         p: 2,
         height: '100%',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        overflow: 'hidden',
       }}
     >
       <Typography variant="h6" gutterBottom>
         {title}
       </Typography>
-      <Box sx={{ flexGrow: 1, width: '100%' }}>
+      <Box sx={{ 
+        flexGrow: 1,
+        width: '100%',
+        height: 'calc(100% - 40px)',
+        minHeight: 400,
+        overflow: 'hidden'
+      }}>
         {safeData.length === 0 && !loading ? (
           <Typography 
             variant="body1" 
@@ -99,6 +106,7 @@ export const Table = <T extends object>({
               toolbar: CustomToolbar,
             }}
             sx={{
+              height: '100%',
               '& .MuiDataGrid-root': {
                 border: 'none',
               },
