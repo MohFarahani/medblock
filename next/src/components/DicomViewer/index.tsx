@@ -5,6 +5,7 @@ import { useDicomData } from '@/hooks/useDicomData';
 import { DicomInfo } from './DicomInfo';
 import { ImageViewer } from './ImageViewer';
 import ErrorDisplay from '../ErrorDisplay';
+import { handleApiError } from '@/utils/errorHandling';
 
 interface DicomViewerProps {
   filePath: string;
@@ -19,7 +20,7 @@ const DicomViewer = ({
   showInfo = true,
   showModal = true 
 }: DicomViewerProps) => {
-  const { data: dicomData, loading, error,refetch } = useDicomData(filePath);
+  const { data: dicomData, loading, error, refetch } = useDicomData(filePath);
 
   if (loading) {
     return (
@@ -30,7 +31,11 @@ const DicomViewer = ({
   }
 
   if (error) {
-    return <ErrorDisplay error={error} onRetry={refetch} />;
+    const errorResponse = handleApiError(error);
+    const errorMessage = errorResponse instanceof Response ? 
+      JSON.parse(errorResponse.body as unknown as string ).error : 
+      'An unexpected error occurred';
+    return <ErrorDisplay error={errorMessage} onRetry={refetch} />;
   }
 
   if (!dicomData || !dicomData.image?.data) {

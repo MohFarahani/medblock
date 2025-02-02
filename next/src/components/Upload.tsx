@@ -12,6 +12,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { UPLOAD } from '@/constants/ui';
+import { AppError } from '@/utils/errorHandling';
 
 interface UploadProps {
   onFileSelect?: (files: File[]) => void;
@@ -29,14 +30,20 @@ export const Upload = ({
 
   const validateFile = (file: File): boolean => {
     if (file.size > maxSize * 1024 * 1024) {
-      setError(`File size should be less than ${maxSize}MB`);
-      return false;
+      throw new AppError(
+        `File size should be less than ${maxSize}MB`,
+        'FILE_SIZE_ERROR',
+        400
+      );
     }
 
     const fileName = file.name.toLowerCase();
     if (!UPLOAD.ACCEPTED_FILE_EXTENSIONS.some(ext => fileName.endsWith(ext))) {
-      setError('Please upload valid DICOM (.dcm) files');
-      return false;
+      throw new AppError(
+        'Please upload valid DICOM (.dcm) files',
+        'INVALID_FILE_TYPE',
+        400
+      );
     }
 
     return true;
@@ -46,17 +53,25 @@ export const Upload = ({
     const validFiles: File[] = [];
     setError('');
 
-    for (const file of newFiles) {
-      if (validateFile(file)) {
-        validFiles.push(file);
+    try {
+      for (const file of newFiles) {
+        if (validateFile(file)) {
+          validFiles.push(file);
+        }
       }
-    }
 
-    if (validFiles.length > 0) {
-      const updatedFiles = [...files, ...validFiles];
-      setFiles(updatedFiles);
-      if (onFileSelect) {
-        onFileSelect(updatedFiles);
+      if (validFiles.length > 0) {
+        const updatedFiles = [...files, ...validFiles];
+        setFiles(updatedFiles);
+        if (onFileSelect) {
+          onFileSelect(updatedFiles);
+        }
+      }
+    } catch (err) {
+      if (err instanceof AppError) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred while processing files');
       }
     }
   };
