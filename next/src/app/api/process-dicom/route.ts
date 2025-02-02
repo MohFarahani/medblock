@@ -3,6 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { AppError, handleApiError } from '@/utils/errorHandling';
 
 const execAsync = promisify(exec);
 
@@ -161,6 +162,10 @@ export async function POST(request: NextRequest) {
       ? await RequestHandler.handleFileUpload(request)
       : await RequestHandler.handleFilePath(request);
 
+    if (!processOptions) {
+      throw new AppError('Failed to process request', 'PROCESSING_ERROR', 400);
+    }
+
     console.log('Process options:', processOptions); // Debug log
 
     // Verify Python environment
@@ -177,14 +182,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
 
   } catch (error) {
-    console.error('Error processing request:', error);
-    
-    const statusCode = error instanceof Error && error.message.includes('exist') ? 404 : 500;
-    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: statusCode }
-    );
+    return handleApiError(error);
   }
 }

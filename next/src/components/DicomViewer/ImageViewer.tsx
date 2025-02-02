@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import Viewer from 'react-viewer';
 import { Box } from '@mui/material';
+import Viewer from 'react-viewer';
 import { DicomViewerfData } from './types';
 import { ImageControls } from './ImageControls';
 import { Magnifier } from './Magnifier';
+import { useDicomViewer } from '@/hooks/useDicomViewer';
 
 interface ImageViewerProps {
   dicomData: DicomViewerfData;
@@ -11,25 +11,17 @@ interface ImageViewerProps {
   showModal?: boolean;
 }
 
-export const ImageViewer = ({ dicomData, showControls = true, showModal = true }: ImageViewerProps) => {
-  const [visible, setVisible] = useState(false);
-  const [contrast, setContrast] = useState(100);
-  const [brightness, setBrightness] = useState(100);
-  const [magnifierEnabled, setMagnifierEnabled] = useState(false);
-  const [magnification, setMagnification] = useState(2);
-
-  const handleReset = () => {
-    setContrast(100);
-    setBrightness(100);
-    setMagnifierEnabled(false);
-    setMagnification(2);
-  };
-
+export const ImageViewer = ({ 
+  dicomData, 
+  showControls = true, 
+  showModal = true 
+}: ImageViewerProps) => {
+  const dicomViewerProps = useDicomViewer();
   const imageUrl = `data:image/png;base64,${dicomData.image.data}`;
 
-  const handleImageClick = () => {
+  const handleModalImageClick = () => {
     if (showModal) {
-      setVisible(true);
+      dicomViewerProps.handleImageClick();
     }
   };
 
@@ -37,39 +29,27 @@ export const ImageViewer = ({ dicomData, showControls = true, showModal = true }
     <Box>
       <Box
         sx={{
-          filter: `contrast(${contrast}%) brightness(${brightness}%)`,
+          filter: `contrast(${dicomViewerProps.contrast}%) brightness(${dicomViewerProps.brightness}%)`,
           mb: showControls ? 2 : 0,
+          position: 'relative',
+          display: 'inline-block',
         }}
       >
         <Magnifier
           src={imageUrl}
-          // width={dicomData.image.width}
-          // height={dicomData.image.height}
-          enabled={magnifierEnabled}
-          magnification={magnification}
+          enabled={dicomViewerProps.magnifierEnabled}
+          magnification={dicomViewerProps.magnification}
           magnifierSize={180}
-          onClick={handleImageClick}
+          onClick={handleModalImageClick}
         />
       </Box>
 
-      {showControls && (
-        <ImageControls
-          contrast={contrast}
-          brightness={brightness}
-          magnifierEnabled={magnifierEnabled}
-          magnification={magnification}
-          onContrastChange={setContrast}
-          onBrightnessChange={setBrightness}
-          onMagnifierToggle={() => setMagnifierEnabled(!magnifierEnabled)}
-          onMagnificationChange={setMagnification}
-          onReset={handleReset}
-        />
-      )}
+      {showControls && <ImageControls {...dicomViewerProps} />}
 
       {showModal && (
         <Viewer
-          visible={visible}
-          onClose={() => setVisible(false)}
+          visible={dicomViewerProps.visible}
+          onClose={() => dicomViewerProps.setVisible(false)}
           images={[{
             src: imageUrl,
             alt: 'DICOM Image'
@@ -85,6 +65,14 @@ export const ImageViewer = ({ dicomData, showControls = true, showModal = true }
             height: dicomData.image.height
           }}
           noToolbar={false}
+          customToolbar={(config) => {
+            config.forEach(item => {
+              if (item.key === 'download') {
+                item.onClick = () => dicomViewerProps.handleDownload(imageUrl, dicomData.StudyDate);
+              }
+            });
+            return config;
+          }}
         />
       )}
     </Box>

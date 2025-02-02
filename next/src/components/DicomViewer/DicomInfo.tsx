@@ -43,7 +43,6 @@ const InfoItem = ({ icon, label, value }: InfoItemProps) => (
 export const DicomInfo = ({ dicomData }: DicomInfoProps) => {
   return (
     <Accordion 
-      defaultExpanded
       sx={{ 
         mb: 3,
         backgroundColor: 'rgba(255, 255, 255, 0.9)',

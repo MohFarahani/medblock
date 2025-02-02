@@ -18,11 +18,11 @@ const ViewButton = ({ filePath, selectedFiles, routePath, disabled }: ViewButton
     if (selectedFiles.length > 1) {
       // For multiple files, encode the array as a query parameter
       const encodedFiles = encodeURIComponent(JSON.stringify(selectedFiles));
-      router.push(`/${routePath}?files=${encodedFiles}`);
+      router.push(`${routePath}?files=${encodedFiles}`);
     } else {
       // For single file, use the original behavior
       const encodedFilePath = encodeURIComponent(filePath);
-      router.push(`/${routePath}?filePath=${encodedFilePath}`);
+      router.push(`${routePath}?filePath=${encodedFilePath}`);
     }
   };
 

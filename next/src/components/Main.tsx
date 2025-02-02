@@ -3,12 +3,9 @@
 
 import { Container, Box, Typography, Stack, Alert, Snackbar } from '@mui/material';
 import { Upload } from '@/components/Upload';
-import Table from './table/Table';
+import DicomTable from './DicomTable/DicomTable';
 import { useDicomUpload } from '@/hooks/useDicomUploald';
-
-
-
-
+import { handleApiError } from '@/utils/errorHandling';
 
 const Main = () => {
   
@@ -20,7 +17,7 @@ const Main = () => {
     clearError 
   } = useDicomUpload();
 
-
+  const errorResponse = error ? handleApiError(error) : null;
 
   return (
     <Container maxWidth="lg">
@@ -32,7 +29,7 @@ const Main = () => {
         <Upload onFileSelect={handleFileUpload} />
         
         <Box sx={{ height: 600 }}>
-          <Table 
+          <DicomTable 
             data={dicomData} 
             loading={loading}
             title="DICOM Data"
@@ -40,12 +37,14 @@ const Main = () => {
         </Box>
 
         <Snackbar 
-          open={!!error} 
+          open={!!errorResponse} 
           autoHideDuration={6000} 
-          onClose={() => clearError}
+          onClose={clearError}
         >
-          <Alert severity="error" onClose={ clearError}>
-            {error}
+          <Alert severity="error" onClose={clearError}>
+            {errorResponse instanceof Response ? 
+              JSON.parse(errorResponse.body as unknown as string).error : 
+              'An unexpected error occurred'}
           </Alert>
         </Snackbar>
       </Stack>

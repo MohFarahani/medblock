@@ -1,11 +1,11 @@
 'use client';
 
 import { Box } from '@mui/material';
-import Table from '@/components/table/Table';
+import DicomTable from '@/components/DicomTable/DicomTable';
 import { useGetAllDicomFiles } from '@/hooks/useGetAllDicomFiles';
 
 
-export default function DownloadPage() {
+const HomePage = () => {
   const { data, loading, error }
    = useGetAllDicomFiles();
 
@@ -15,7 +15,7 @@ export default function DownloadPage() {
   
   return (
     <Box sx={{ height: 600 }}>
-      <Table 
+      <DicomTable 
         data={data || []} 
         loading={loading}
         title="Available DICOM Data"
@@ -23,3 +23,5 @@ export default function DownloadPage() {
     </Box>
   );
 }
+
+export default HomePage;
