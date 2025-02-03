@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { CHECK_FILE_PATH_EXISTS, PROCESS_DICOM_UPLOAD } from '@/graphql/operations';
-import { DicomDataTable } from '@/components/Table/types';
+import { DicomDataTable } from '@/components/Table_/types';
 import { ROUTES } from '@/constants/routes';
 import axios from 'axios';
 import { useApolloClient } from '@apollo/client';

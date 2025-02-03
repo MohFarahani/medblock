@@ -16,7 +16,10 @@ WORKDIR /app
 
 # Copy application code
 COPY . .
-
+RUN ls -la
+RUN ls -la src/components/
+RUN ls -la src/components/DicomTable/
+RUN ls -la src/components/Table/
 # Create necessary directories with proper permissions
 RUN mkdir -p /app/python_env && \
     mkdir -p /app/dicom_files && \
