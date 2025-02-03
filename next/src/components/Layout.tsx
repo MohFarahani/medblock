@@ -77,7 +77,6 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <Box 
-      maxWidth="lg" 
       sx={{ 
         height: '100vh',
       }}
