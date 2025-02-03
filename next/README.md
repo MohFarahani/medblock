@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next.js DICOM Viewer Application
 
-## Getting Started
+This is a [Next.js](https://nextjs.org) project with DICOM viewing capabilities, using MySQL for data storage.
+
+## Project Structure
+```
+next/
+├── public/               # Static files
+├── python_env/          # Python environment and scripts
+│   ├── requirements.txt
+│   └── scripts/
+│       └── python/
+│           └── process_dicom.py
+├── scripts/             # Setup and initialization scripts
+│   ├── init-db.ts
+│   └── start-db.sh
+├── src/
+│   ├── app/            # Next.js app directory
+│   │   ├── api/        # API routes
+│   │   ├── home/       # Page components
+│   │   └── ...
+│   ├── components/     # React components
+│   ├── db/            # Database configuration
+│   ├── graphql/       # GraphQL schema and resolvers
+│   ├── hooks/         # Custom React hooks
+│   └── utils/         # Utility functions
+├── .env                # Environment variables (create this)
+├── docker-compose.yml  # Docker composition
+├── Dockerfile         # Docker build instructions
+└── package.json       # Project dependencies
+```
+
+## Running with Docker
+
+1. **Prerequisites**
+   - Docker and Docker Compose installed
+   - Node.js 20.x or later
+   - Python 3.x
+
+2. **Environment Setup**
+   Create a `.env` file in the root directory:
+   ```env
+   DB_HOST=db
+   DB_PORT=3306
+   DB_NAME=dicom_db
+   DB_USER=dicom_user
+   DB_PASS=dicom_password
+   ```
+
+3. **Start the Application**
+   ```bash
+   # Build and start all services
+   docker-compose up -d
+
+   # Initialize the database (first time only)
+   yarn init-db
+   ```
+
+4. **Access the Application**
+   Open [http://localhost:3000](http://localhost:3000) in your browser
+
+5. **Stop the Application**
+   ```bash
+   docker-compose down
+   ```
+
+## Development Without Docker
 
 First, run the development server:
 
 ```bash
-npm run dev
-# or
+# Install dependencies
+yarn install
+
+# Start MySQL database
+yarn start-db
+
+# Run the development server
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Material-UI Documentation](https://mui.com/material-ui/)
+- [GraphQL Documentation](https://graphql.org/learn/)
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
