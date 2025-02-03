@@ -1,73 +1,75 @@
 # Build stage
 FROM --platform=$BUILDPLATFORM node:20-slim AS builder
 
-# Install Python and required system dependencies
+# Install required system packages including python3-venv and build dependencies
 RUN apt-get update && apt-get install -y \
-    python3-full \
+    python3 \
     python3-pip \
     python3-venv \
+    python3-dev \
+    gcc \
+    g++ \
+    make \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-
-# Create and activate Python virtual environment
-ENV VIRTUAL_ENV=/app/venv
-RUN python3 -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-
-# Copy package files
-COPY package*.json yarn.lock ./
-
-# Install dependencies
-RUN yarn install --frozen-lockfile
 
 # Copy application code
 COPY . .
 
-# Install Python dependencies in the virtual environment
-RUN pip3 install --no-cache-dir -r requirements.txt
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/python_env && \
+    mkdir -p /app/dicom_files && \
+    chmod 777 /app/dicom_files && \
+    chmod -R 755 /app/python_env
 
+# Set up Python environment with venv subdirectory
+ENV VIRTUAL_ENV=/app/python_env/venv
+ENV PYTHON_PATH=$VIRTUAL_ENV/bin/python3
+ENV PIP_PATH=$VIRTUAL_ENV/bin/pip3
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Verify Python installation before venv creation
+RUN python3 --version && \
+    which python3 && \
+    python3 -c "import venv; print('venv module available')" && \
+    python3 -c "import venv; print(venv.__file__)"
+
+# Create virtual environment in the venv subdirectory with verification
+RUN mkdir -p $VIRTUAL_ENV && \
+    python3 -m venv --clear --copies $VIRTUAL_ENV && \
+    ls -la $VIRTUAL_ENV && \
+    ls -la $VIRTUAL_ENV/bin && \
+    test -f $PYTHON_PATH && \
+    echo "Python executable located at: $PYTHON_PATH"
+
+# Test Python environment
+RUN $PYTHON_PATH --version && \
+    echo "Python environment verified successfully"
+
+# Use the virtual environment's pip explicitly with the correct path
+RUN $VIRTUAL_ENV/bin/pip3 install --upgrade pip && \
+    $VIRTUAL_ENV/bin/pip3 install wheel setuptools && \
+    $VIRTUAL_ENV/bin/pip3 install pandas numpy pydicom && \
+    $VIRTUAL_ENV/bin/pip3 install --no-cache-dir -r python_env/requirements.txt
+
+# Test
+RUN python3 -c "import pydicom; import numpy; import pandas" && \
+    echo "Python environment verified successfully"
+
+# Install Node dependencies
+RUN yarn add @mui/lab zod && \
+    yarn install --frozen-lockfile
+    
 # Build the application
 RUN yarn build
 
-# Production stage
-FROM --platform=$TARGETPLATFORM node:20-slim
-
-# Install Python and required system dependencies
-RUN apt-get update && apt-get install -y \
-    python3-full \
-    python3-pip \
-    python3-venv \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-# Create and activate Python virtual environment
-ENV VIRTUAL_ENV=/app/venv
-RUN python3 -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-
-# Copy package files
-COPY package*.json yarn.lock ./
-
-# Install production dependencies
-RUN yarn install --production --frozen-lockfile
-
-# Copy built application and virtual environment from builder stage
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/scripts ./scripts
-COPY --from=builder /app/python_env ./python_env
-COPY --from=builder /app/venv ./venv
-
-# Copy Python requirements (for reference)
-COPY python_env/requirements.txt ./
 
 # Make start script executable
 RUN chmod +x ./scripts/start-db.sh
-
+CMD ["yarn","start-db"]
 # Expose port
 EXPOSE 3000
 
 # Start the application
-CMD ["yarn", "start"] 
+CMD ["yarn", "start"]
