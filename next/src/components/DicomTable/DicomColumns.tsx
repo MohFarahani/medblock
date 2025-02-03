@@ -1,7 +1,7 @@
 'use client';
 
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { DicomDataTable } from '../Table_/types';
+import { DicomDataTable } from '../Table/types';
 import ViewButton from '../ViewButton';
 import { useDownload } from '@/providers/DownloadProvider';
 import { LoadingButton } from '@mui/lab';

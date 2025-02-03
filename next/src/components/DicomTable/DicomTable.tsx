@@ -1,11 +1,11 @@
 'use client';
 
 import { DicomData } from '@/graphql/types';
-import Table from '../Table_';
+import Table from '../Table';
 import { DicomColumns } from './DicomColumns';
 import { DownloadProvider } from '@/providers/DownloadProvider';
 import { useState } from 'react';
-import { DicomDataTable } from '../Table_/types';
+import { DicomDataTable } from '../Table/types';
 import { handleApiError } from '@/utils/errorHandling';
 import ErrorDisplay from '../ErrorDisplay';
 
