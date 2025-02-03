@@ -1,6 +1,6 @@
-# Next.js DICOM Viewer Application
+# DICOM Viewer Application
 
-This is a [Next.js](https://nextjs.org) project with DICOM viewing capabilities, using MySQL for data storage.
+This is a project with DICOM viewing capabilities, using MySQL for data storage.
 
 ## Project Structure
 ```
@@ -92,6 +92,4 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - [Material-UI Documentation](https://mui.com/material-ui/)
 - [GraphQL Documentation](https://graphql.org/learn/)
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
