@@ -41,7 +41,7 @@ services:
       - DB_PORT=3306
       - DB_NAME=dicom_db
       - DB_USER=dicom_user
-      - DB_PASS=userpassword123
+      - DB_PASS=dicom_password
     volumes:
       - /var/lib/dicom-files:/app/dicom_files
     depends_on:

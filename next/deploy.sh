@@ -34,4 +34,17 @@ docker-compose -f docker-compose-prod.yml up --build -d
 sleep 10
 docker-compose -f docker-compose-prod.yml exec app yarn init-db
 
+# Create .env file
+cat > .env << EOL
+MYSQL_ROOT_PASSWORD=rootpassword
+MYSQL_PASSWORD=dicom_password
+DB_PORT=3306
+DB_NAME=dicom_db
+DB_USER=dicom_user
+DB_PASS=dicom_password
+EOL
+
+# Set proper permissions
+chmod 600 .env
+
 echo "Deployment completed!" 
