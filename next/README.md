@@ -17,7 +17,12 @@ next/
 ├── src/
 │   ├── app/            # Next.js app directory
 │   │   ├── api/        # API routes
-│   │   ├── home/       # Page components
+│   │   ├── page.tsx    # Root page
+│   │   ├── home/
+│   │   │   └── page.tsx
+│   │   ├── preview/
+│   │   │   └── multi/
+│   │   │       └── page.tsx
 │   │   └── ...
 │   ├── components/     # React components
 │   ├── db/            # Database configuration
