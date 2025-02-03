@@ -1,15 +1,22 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from 'next/navigation';
 import { DicomData } from "@/graphql/types";
-import DicomPreviewLayout from "@/components/DicomPreviewLayout";
+import dynamic from 'next/dynamic';
+
 import { Box, Button, Container } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useRouter } from "next/navigation";
 import { ROUTES } from '@/constants/routes';
 import { LogService } from '@/utils/logging';
-const MultiPreviewPage = () => {
+
+const DicomPreviewLayout = dynamic(
+  () => import('@/components/DicomPreviewLayout'),
+  { ssr: false }
+);
+
+const MultiPreviewContent = () => {
   const searchParams = useSearchParams();
   const [selectedFilePath, setSelectedFilePath] = useState<string>('');
   const [files, setFiles] = useState<string[]>([]);
@@ -60,6 +67,14 @@ const MultiPreviewPage = () => {
     />
     </Container>
 
+  );
+};
+
+const MultiPreviewPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MultiPreviewContent />
+    </Suspense>
   );
 };
 
